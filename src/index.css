@@ -322,7 +322,7 @@ textarea:focus-visible {
   width: 16rem;
   height: 16rem;
   border-radius: 50%;
-  background: hsla(120, 5%, 45%, 0.72);
+  background: #37412F;
   filter: blur(0.3px);
 }
 
@@ -425,19 +425,20 @@ textarea:focus-visible {
 }
 
 .treatment-check--selected {
-  background: rgba(112,127,111,0.96);
-  border-color: rgba(112,127,111,0.96);
+  background: #37412F;
+  border-color: #37412F;
   color: #f7f7f5;
 }
 
 .treatment-option--selected {
-  border-color: rgba(255,255,255,0.18);
-  background: rgba(88,103,90,0.12);
+  border-color: #37412F;
+  background: #37412F;
 }
 
 .treatment-cta {
-  background: linear-gradient(180deg, rgba(112,127,111,0.95), rgba(88,103,90,0.98));
-  color: #f7f7f5;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, #f7f7f5, #f7f7f5);
+  color: #37412F;
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 10px 18px rgba(88, 103, 90, 0.16);
 }
@@ -457,6 +458,8 @@ textarea:focus-visible {
 
 .profile-photo {
   display: block;
+  width: min(100%, 22rem);
+  margin: 0 auto;
   border-radius: var(--radius-xl);
   border: 1px solid var(--stroke);
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
@@ -545,7 +548,7 @@ textarea:focus-visible {
   width: 2.7rem;
   height: 2.7rem;
   border-radius: 50%;
-  background: var(--olive);
+  background: #37412F;
   color: var(--text);
 }
 
@@ -562,7 +565,7 @@ textarea:focus-visible {
 
 .android-shell button.bg-zinc-900,
 .android-shell .bg-zinc-900 {
-  background: linear-gradient(180deg, rgba(112,127,111,0.95), rgba(88,103,90,0.98));
+  background: linear-gradient(180deg, #37412F, #37412F);
   color: var(--text);
   border: 1px solid rgba(255,255,255,0.08);
   padding: 0.8rem 1rem;

@@ -38,9 +38,9 @@ interface TreatmentProduct {
 })
 export class AppComponent {
   readonly brandIcon = "imports/icone-thalisson.png"
-  readonly instituteEmblem = "imports/instituto-thalisson-emblema.png"
-  readonly thalissonPhoto =
-    "imports/ChatGPT_Image_27_de_set._de_2026__23_45_14.png"
+  readonly instituteEmblem =
+    "imports/WhatsApp_Image_2026-09-24_at_20.07.57.jpeg"
+  readonly thalissonPhoto = "imports/Thalisson-Rodrigues.png"
   readonly appointmentAddressLink =
     "https://www.google.com/maps/search/?api=1&query=DF+Plaza+Shopping+Brasilia"
   readonly instituteInstagramLink = "https://www.instagram.com/"
