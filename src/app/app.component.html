@@ -660,6 +660,13 @@
         }
       }
     }
+    @if (
+      page === "tratamentos" || page === "contato" || page === "atendimento"
+    ) {
+      <ng-container
+        *ngTemplateOutlet="back; context: { position: 'bottom' }"
+      />
+    }
   </main>
 
   @if (page !== "cadastro") {
@@ -829,8 +836,11 @@
   </svg>
 </ng-template>
 
-<ng-template #back>
-  <div class="px-5 pt-8">
+<ng-template #back let-position="position">
+  <div
+    class="px-5 pt-8"
+    [class.pb-12]="position === 'bottom'"
+  >
     <button
       type="button"
       (click)="goToPhysiotherapistMenu()"
