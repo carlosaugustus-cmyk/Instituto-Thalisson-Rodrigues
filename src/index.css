@@ -976,10 +976,10 @@ textarea:focus-visible {
   }
 
   .android-shell {
-    width: min(100%, 1200px);
+    width: 100%;
     max-width: none;
     min-height: 100vh;
-    margin: 0 auto;
+    margin: 0;
     padding-bottom: 0;
     border: 0;
     border-radius: 0;
@@ -992,7 +992,7 @@ textarea:focus-visible {
 
   .android-shell header .mx-auto {
     width: 100%;
-    max-width: 1160px;
+    max-width: none;
     min-height: 5.25rem;
     gap: 1.5rem;
     padding: 0 2rem;
@@ -1045,9 +1045,9 @@ textarea:focus-visible {
   .android-shell section,
   .android-shell footer section {
     width: 100%;
-    max-width: 1160px;
-    margin-right: auto;
-    margin-left: auto;
+    max-width: none;
+    margin-right: 0;
+    margin-left: 0;
     padding-right: 2rem;
     padding-left: 2rem;
   }
@@ -1123,16 +1123,18 @@ textarea:focus-visible {
   }
 
   .android-shell .footer-block {
-    max-width: 1160px;
+    width: 100%;
+    max-width: none;
     grid-template-columns: 1.2fr 1fr;
     gap: 4rem;
-    margin: 0 auto;
+    margin: 0;
     padding: 2rem;
   }
 
   .android-shell footer > div:last-child {
-    max-width: 1160px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
   }
 }
 
