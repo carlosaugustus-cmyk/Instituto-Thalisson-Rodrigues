@@ -1,0 +1,883 @@
+<div
+  class="android-shell mx-auto min-h-screen max-w-[430px] bg-[#f7f7f5] text-zinc-900 shadow-2xl"
+>
+  <header
+    class="sticky top-0 z-20 border-b border-zinc-300 bg-[#f7f7f5]/95 backdrop-blur"
+  >
+    <div class="mx-auto flex h-16 items-center justify-between px-5">
+      <button
+        type="button"
+        (click)="goTo('inicio')"
+        class="header-brand flex items-center gap-3 text-left"
+        aria-label="Ir para o início"
+      >
+        <img [src]="brandIcon" alt="" class="brand-logo" aria-hidden="true" />
+        <span class="brand-name text-base font-bold tracking-tight"
+          >Instituto Thalisson Rodrigues</span
+        >
+      </button>
+      <nav class="desktop-navigation" aria-label="Navegação principal">
+        @for (item of bottomNavigation; track item.id) {
+          <button
+            type="button"
+            (click)="goTo(item.id)"
+            class="desktop-nav-item"
+            [class.is-active]="page === item.id"
+            [attr.aria-current]="page === item.id ? 'page' : null"
+          >
+            {{ item.label }}
+          </button>
+        }
+      </nav>
+      @if (page !== "inicio") {
+        <button
+          type="button"
+          (click)="goTo('inicio')"
+          class="mobile-home-button border border-zinc-400 px-3 py-2 text-xs font-semibold"
+        >
+          Início
+        </button>
+      }
+    </div>
+  </header>
+
+  <main class="pb-20">
+    @switch (page) {
+      @case ("inicio") {
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Instituto Thalisson Rodrigues',
+              title: 'Cuidado, movimento e autonomia.',
+              description:
+                'O Instituto é um espaço dedicado à fisioterapia ortopédica e esportiva, com acompanhamento próximo e atenção às necessidades de cada pessoa.',
+            }
+          "
+        />
+        <section class="flex justify-center px-5 pb-16">
+          <div class="institute-emblem">
+            <img
+              [src]="instituteEmblem"
+              alt="Emblema de Thalisson Rodrigues — Fisioterapia Ortopédica e Esportiva"
+            />
+          </div>
+        </section>
+        <section class="border-y border-zinc-300 bg-white px-5 py-14">
+          <p class="eyebrow">Nosso objetivo</p>
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight">
+            Ajudar cada paciente a voltar ao que importa.
+          </h2>
+          <div class="mt-6 space-y-5 leading-7 text-zinc-600">
+            <p>
+              O objetivo do Instituto é promover recuperação, prevenção e
+              qualidade de vida por meio de um cuidado individualizado, claro e
+              seguro.
+            </p>
+            <p>
+              Cada acompanhamento considera a rotina, os limites e as metas do
+              paciente para desenvolver mobilidade, força, confiança e
+              independência ao longo do processo.
+            </p>
+          </div>
+        </section>
+        <section class="px-5 py-16">
+          <p class="eyebrow">Como cuidamos</p>
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight">
+            Um processo construído com você.
+          </h2>
+          <ng-container
+            *ngTemplateOutlet="steps; context: { items: careSteps }"
+          />
+        </section>
+        <section class="border-y border-zinc-300 bg-white px-5 py-14">
+          <p class="eyebrow">Para quem é</p>
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight">
+            Cuidado para diferentes momentos.
+          </h2>
+          <div class="mt-6 space-y-5 leading-7 text-zinc-600">
+            <p>
+              O Instituto atende pessoas que convivem com dores, estão se
+              recuperando de lesões ou cirurgias, desejam prevenir limitações ou
+              precisam voltar às atividades físicas com mais segurança.
+            </p>
+            <p>
+              O atendimento pode acontecer de forma presencial, online ou em
+              domicílio, sempre com a mesma atenção ao contexto e às
+              necessidades de cada paciente.
+            </p>
+          </div>
+        </section>
+        <section class="px-5 py-16">
+          <p class="leading-7 text-zinc-600">
+            Conheça o profissional responsável pela abordagem e pelos
+            atendimentos do Instituto.
+          </p>
+          <button
+            type="button"
+            (click)="goTo('fisioterapeuta')"
+            class="mt-8 flex w-full items-center justify-between border border-zinc-300 px-6 py-4 font-semibold"
+          >
+            Conheça o fisioterapeuta <span aria-hidden="true">→</span>
+          </button>
+        </section>
+      }
+
+      @case ("conteudo") {
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Fisioterapeuta',
+
+              title: 'Movimento é qualidade de vida.',
+              description:
+                'A fisioterapia é a área da saúde dedicada a prevenir, avaliar e tratar alterações do movimento. Por meio de uma abordagem individualizada, ela ajuda a aliviar dores, recuperar funções e devolver segurança para as atividades do dia a dia.',
+            }
+          "
+        />
+        <section class="border-y border-zinc-300 bg-white px-5 py-14">
+          <p class="eyebrow">Como funciona</p>
+          <ng-container
+            *ngTemplateOutlet="steps; context: { items: contentSteps }"
+          />
+        </section>
+        <section class="px-5 py-16">
+          <p class="leading-7 text-zinc-600">
+            Na fisioterapia ortopédica e esportiva, o cuidado considera tanto a
+            recuperação de lesões quanto a preparação do corpo para voltar às
+            atividades com autonomia, confiança e melhor desempenho.
+          </p>
+        </section>
+      }
+
+      @case ("rpa") {
+        <ng-container *ngTemplateOutlet="back" />
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Programa RPA',
+              title: 'Recuperação, prevenção e autonomia.',
+              description:
+                'Um programa baseado na fisioterapia para cuidar do movimento, acompanhar a evolução e ajudar cada pessoa a voltar às suas atividades com mais segurança.',
+            }
+          "
+        />
+        <section class="border-y border-zinc-300 bg-white px-5 py-14">
+          <p class="eyebrow">Sobre a fisioterapia</p>
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight">
+            Movimento também é cuidado.
+          </h2>
+          <div class="mt-6 space-y-5 leading-7 text-zinc-600">
+            <p>
+              A fisioterapia é uma área da saúde dedicada a avaliar, prevenir e
+              tratar alterações que afetam os movimentos e a capacidade de
+              realizar atividades do dia a dia.
+            </p>
+            <p>
+              O acompanhamento começa com uma avaliação individual. A partir
+              dela, são definidos exercícios e estratégias adequados às
+              necessidades, aos limites e aos objetivos de cada paciente.
+            </p>
+          </div>
+        </section>
+        <section class="px-5 py-16">
+          <p class="eyebrow">Pilares do programa</p>
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight">
+            Um cuidado que acompanha cada etapa.
+          </h2>
+          <ng-container
+            *ngTemplateOutlet="steps; context: { items: rpaPillars }"
+          />
+        </section>
+        <section class="border-y border-zinc-300 bg-white px-5 py-14">
+          <p class="eyebrow">Como funciona</p>
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight">
+            Do primeiro movimento à retomada da rotina.
+          </h2>
+          <p class="mt-6 leading-7 text-zinc-600">
+            O plano é ajustado conforme a evolução do paciente. Mobilidade,
+            força, equilíbrio e controle do movimento são trabalhados de forma
+            progressiva, respeitando o tempo e a resposta de cada pessoa.
+          </p>
+          <button
+            type="button"
+            (click)="goTo('atendimento')"
+            class="mt-8 flex w-full items-center justify-between border border-zinc-300 px-6 py-4 font-semibold"
+          >
+            Conhecer o atendimento
+            <span aria-hidden="true">→</span>
+          </button>
+        </section>
+      }
+
+      @case ("servicos") {
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Produtos',
+              title: 'Escolha o cuidado ideal para você.',
+              description:
+                'Conheça nossos programas e selecione a opção que mais combina com o seu momento.',
+            }
+          "
+        />
+        <section class="px-5 pb-20">
+          <div class="grid gap-4">
+            @for (product of products; track product.title; let index = $index) {
+              <article
+                class="product-card border border-zinc-300 p-6 text-left"
+              >
+                <ng-container
+                  *ngTemplateOutlet="icon; context: { type: product.icon }"
+                />
+                <span class="mt-10 block font-mono text-xs text-zinc-500"
+                  >0{{ index + 1 }}</span
+                >
+                <h2 class="mt-3 text-2xl font-medium leading-tight">
+                  {{ product.title }}
+                </h2>
+                <p class="mt-4 leading-7 text-zinc-600">
+                  {{ product.description }}
+                </p>
+                <button
+                  type="button"
+                  (click)="startRegistration('Produtos', [product.title])"
+                  class="mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 text-base font-semibold text-white"
+                >
+                  <span aria-hidden="true">✓</span> Me interessei
+                </button>
+              </article>
+            }
+          </div>
+          <button
+            type="button"
+            (click)="startRegistration('Produtos', ['Programa Online', 'Programa de Reabilitação', 'Prevenção de Imobilidade'])"
+            class="mt-8 flex w-full items-center justify-center gap-3 border border-zinc-300 px-6 py-4 text-base font-semibold"
+          >
+            <span aria-hidden="true">✓</span> Me interessei em todos
+          </button>
+        </section>
+      }
+
+      @case ("fisioterapeuta") {
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'O fisioterapeuta',
+              title: 'Thalisson Rodrigues',
+              description:
+                'Fisioterapeuta com atuação em ortopedia, esporte, recuperação e prevenção de lesões.',
+            }
+          "
+        />
+        <section class="px-5 pb-16">
+          <img
+            [src]="thalissonPhoto"
+            alt="Fisioterapeuta Thalisson Rodrigues"
+            class="profile-photo aspect-[4/5] w-full object-cover"
+          />
+        </section>
+        <section class="border-y border-zinc-300 bg-white px-5 py-14">
+          <p class="eyebrow">Sobre</p>
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight">
+            Cuidado individual e próximo.
+          </h2>
+          <div class="mt-6 space-y-4 leading-7 text-zinc-600">
+            <p>
+              Thalisson Rodrigues acompanha pacientes que buscam aliviar dores,
+              recuperar movimentos, prevenir lesões e voltar às suas atividades
+              com segurança.
+            </p>
+            <p>
+              Seu trabalho combina escuta, avaliação individual e exercícios
+              adequados aos objetivos de cada pessoa.
+            </p>
+          </div>
+          <a
+            [href]="physiotherapistInstagramLink"
+            target="_blank"
+            rel="noreferrer"
+            class="instagram-link mt-8"
+            aria-label="Abrir Instagram de Thalisson Rodrigues"
+          >
+            <span class="instagram-brand">
+              <ng-container *ngTemplateOutlet="instagramIcon" />
+            </span>
+            <span class="instagram-label">Instagram profissional</span>
+            <span class="instagram-arrow" aria-hidden="true">↗</span>
+          </a>
+        </section>
+        <section
+          id="physiotherapist-menu"
+          class="scroll-mt-24 px-5 py-16"
+        >
+          <p class="leading-7 text-zinc-600">
+            Conheça as modalidades de cuidado disponíveis e os programas
+            oferecidos em cada uma delas.
+          </p>
+
+          <div class="menu-grid mt-8">
+            @for (
+              link of [
+                { page: "tratamentos", label: "Tratamentos" },
+                { page: "contato", label: "Mentoria" },
+                { page: "atendimento", label: "Atendimento" },
+                { page: "rpa", label: "Programa RPA" },
+              ];
+              track link.page
+            ) {
+              <button
+                type="button"
+                (click)="goTo($any(link.page))"
+                class="menu-button"
+              >
+                <span class="menu-button-label">
+                  {{ link.label }}
+                </span>
+                <span class="menu-button-arrow" aria-hidden="true">→</span>
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      @case ("contato") {
+        <ng-container *ngTemplateOutlet="back" />
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Mentoria',
+              title: 'Orientação próxima para evoluir com segurança.',
+              description:
+                'A mentoria é um acompanhamento individual para entender seus objetivos, esclarecer dúvidas e construir um caminho prático de cuidado, recuperação e prevenção.',
+            }
+          "
+        />
+        <section class="border-y border-zinc-300 bg-white px-5 py-14">
+          <p class="eyebrow">Como vai funcionar</p>
+          <ng-container
+            *ngTemplateOutlet="steps; context: { items: mentorshipSteps }"
+          />
+        </section>
+        <section class="px-5 py-16">
+          <p class="leading-7 text-zinc-600">
+            Os encontros são personalizados e podem acontecer de forma online,
+            com orientações claras para você aplicar entre uma conversa e outra.
+          </p>
+          <button
+            type="button"
+            (click)="startRegistration('Mentoria', ['Mentoria'])"
+            class="mt-8 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 font-semibold text-white"
+          >
+            <span aria-hidden="true">✓</span> Tenho interesse
+          </button>
+        </section>
+      }
+
+      @case ("atendimento") {
+        <ng-container *ngTemplateOutlet="back" />
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Atendimento',
+              title: 'Cuidado onde fizer mais sentido para você.',
+              description:
+                'Atendimento presencial individualizado, com avaliação próxima e um plano de cuidado construído para suas necessidades.',
+            }
+          "
+        />
+        <section class="grid gap-4 px-5 pb-20">
+          @for (item of attendanceTypes; track item.title; let index = $index) {
+            <article
+              class="attendance-card border border-zinc-300 bg-[#f7f7f5] p-6"
+            >
+              <ng-container
+                *ngTemplateOutlet="icon; context: { type: item.icon }"
+              />
+              <span class="mt-8 block font-mono text-xs text-zinc-500"
+                >0{{ index + 1 }}</span
+              >
+              <h2 class="mt-3 text-2xl font-semibold">{{ item.title }}</h2>
+              <p class="mt-4 leading-7 text-zinc-600">
+                {{ item.description }}
+              </p>
+              <div class="address-block">
+                <p class="eyebrow">Endereço</p>
+                <div class="address-detail">
+                  <span class="address-marker" aria-hidden="true"></span>
+                  <p>{{ item.detail }}</p>
+                </div>
+                <a
+                  [href]="appointmentAddressLink"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="address-map-link"
+                >
+                  <span>Abrir endereço no mapa</span>
+                  <span class="address-map-arrow" aria-hidden="true">↗</span>
+                </a>
+              </div>
+              @if (item.notice) {
+                <p
+                  class="attendance-notice"
+                >
+                  <span class="notice-mark" aria-hidden="true">i</span>
+                  {{ item.notice }}
+                </p>
+              }
+              <button
+                type="button"
+                (click)="
+                  startRegistration('Atendimento', ['Consulta presencial'])
+                "
+                class="mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 font-semibold text-white"
+              >
+                <span aria-hidden="true">＋</span>
+                Marcar consulta
+              </button>
+            </article>
+          }
+        </section>
+      }
+
+      @case ("tratamentos") {
+        <ng-container *ngTemplateOutlet="back" />
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Tratamentos',
+              title: 'Escolha como deseja ser acompanhado.',
+              description:
+                'Conheça as modalidades e selecione a quantidade de programas disponível em cada tratamento.',
+            }
+          "
+        />
+        <section class="px-5 pb-20">
+          <div class="grid gap-4">
+            @for (
+              treatment of treatments;
+              track treatment.title;
+              let index = $index
+            ) {
+              <article class="treatment-card product-card border border-zinc-300 p-6">
+                <div class="treatment-header">
+                  <ng-container
+                    *ngTemplateOutlet="
+                      icon;
+                      context: { type: treatment.icon }
+                    "
+                  />
+                  <span class="treatment-index">0{{ index + 1 }}</span>
+                </div>
+                <h2 class="mt-4 text-3xl font-semibold">
+                  {{ treatment.title }}
+                </h2>
+                <p class="mt-4 leading-7 text-zinc-600">
+                  {{ treatment.description }}
+                </p>
+                <div class="mt-6 border-t border-zinc-300 pt-5">
+                  <div class="flex items-center justify-between gap-4">
+                    <p class="eyebrow">Programas disponíveis</p>
+                    <span class="text-xs text-zinc-500"
+                      >{{ selectedFor(treatment.title).length }}/{{
+                        treatment.maxSelections
+                      }}</span
+                    >
+                  </div>
+                  <div class="mt-4 grid gap-3">
+                    @for (product of treatment.products; track product.title) {
+                      <button
+                        type="button"
+                        [attr.aria-pressed]="
+                          isSelected(treatment.title, product.title)
+                        "
+                        (click)="
+                          toggleProduct(treatment.title, product.title)
+                        "
+                        class="treatment-option flex items-start justify-between gap-4 border text-left"
+                        [class.treatment-option--selected]="
+                          isSelected(treatment.title, product.title)
+                        "
+                        [class.border-zinc-300]="
+                          !isSelected(treatment.title, product.title)
+                        "
+                      >
+                        <span class="treatment-copy">
+                          <span class="treatment-title">{{ product.title }}</span>
+                          <span class="treatment-summary">{{ product.summary }}</span>
+                        </span>
+                        <span
+                          class="treatment-check"
+                          [class.treatment-check--selected]="
+                            isSelected(treatment.title, product.title)
+                          "
+                          aria-hidden="true"
+                        >
+                          @if (isSelected(treatment.title, product.title)) {
+                            ✓
+                          }
+                        </span>
+                      </button>
+                    }
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  [disabled]="!canRegisterTreatment(treatment.title)"
+                  (click)="registerTreatmentInterest(treatment.title)"
+                  class="treatment-cta mt-6 flex w-full items-center justify-center gap-3 rounded-full px-5 py-3 font-semibold transition-colors"
+                  [class.treatment-cta--disabled]="!canRegisterTreatment(treatment.title)"
+                >
+                  <span aria-hidden="true">✓</span> Me interessei
+                </button>
+              </article>
+            }
+          </div>
+        </section>
+      }
+
+      @case ("cadastro") {
+        @if (submitted) {
+          <section
+            class="mx-auto flex min-h-[65vh] flex-col items-center justify-center px-5 py-20 text-center"
+          >
+            <span
+              class="mb-6 grid size-14 place-items-center rounded-full border-2 border-zinc-900 text-2xl"
+              >✓</span
+            >
+            <p class="eyebrow">Cadastro enviado</p>
+            <h1 class="mt-4 text-4xl font-semibold tracking-tight">
+              Obrigado pelo interesse.
+            </h1>
+            <p class="mt-5 max-w-md leading-7 text-zinc-600">
+              Recebemos seus dados e entraremos em contato para conversar sobre
+              {{ interest?.source?.toLowerCase() || "seu interesse" }}.
+            </p>
+          </section>
+        } @else {
+          <section class="px-5 py-16">
+            @if (interest?.source === "Tratamentos") {
+              <button
+                type="button"
+                (click)="goTo('tratamentos')"
+                class="mb-10 border border-zinc-300 px-4 py-3 text-sm font-semibold"
+              >
+                ← Voltar para tratamentos
+              </button>
+            }
+            @if (interest?.source === "Mentoria") {
+              <button
+                type="button"
+                (click)="goTo('contato')"
+                class="mb-10 border border-zinc-300 px-4 py-3 text-sm font-semibold"
+              >
+                ← Voltar para mentoria
+              </button>
+            }
+            @if (interest?.source === "Atendimento") {
+              <button
+                type="button"
+                (click)="goTo('atendimento')"
+                class="mb-10 border border-zinc-300 px-4 py-3 text-sm font-semibold"
+              >
+                ← Voltar para atendimento
+              </button>
+            }
+            <p class="eyebrow">Cadastro de interesse</p>
+            <h1
+              class="mt-5 text-5xl font-semibold leading-tight tracking-[-0.04em]"
+            >
+              Falta pouco.
+            </h1>
+            <p class="mt-6 leading-7 text-zinc-600">
+              Preencha seus dados para que o Instituto possa entrar em contato
+              com você.
+            </p>
+            @if (interest) {
+              <div class="mt-8 border border-zinc-300 bg-zinc-100 p-5">
+                <p class="eyebrow">Seu interesse</p>
+                <p class="mt-3 font-semibold">{{ interest.source }}</p>
+                <ul class="mt-3 space-y-2 text-sm text-zinc-600">
+                  @for (item of interest.items; track item) {
+                    <li>— {{ item }}</li>
+                  }
+                </ul>
+              </div>
+            }
+            <form
+              class="mt-8 border border-zinc-300 bg-white p-6"
+              (ngSubmit)="submitRegistration()"
+            >
+              <div class="grid gap-6">
+                <label class="block text-sm font-semibold"
+                  >Nome
+                  <input
+                    required
+                    name="name"
+                    type="text"
+                    placeholder="Seu nome"
+                    class="mt-2 w-full border border-zinc-300 px-4 py-3 font-normal outline-none"
+                  />
+                </label>
+                <label class="block text-sm font-semibold"
+                  >E-mail
+                  <input
+                    required
+                    name="email"
+                    type="email"
+                    placeholder="voce@exemplo.com"
+                    class="mt-2 w-full border border-zinc-300 px-4 py-3 font-normal outline-none"
+                  />
+                </label>
+                <label class="block text-sm font-semibold"
+                  >Telefone
+                  <input
+                    name="phone"
+                    type="tel"
+                    inputmode="tel"
+                    maxlength="15"
+                    placeholder="(00) 00000-0000"
+                    (input)="formatPhone($event)"
+                    class="mt-2 w-full border border-zinc-300 px-4 py-3 font-normal outline-none"
+                  />
+                </label>
+              </div>
+              <button
+                type="submit"
+                class="mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+              >
+                Enviar cadastro
+              </button>
+            </form>
+          </section>
+        }
+      }
+    }
+  </main>
+
+  @if (page !== "cadastro") {
+    <footer class="border-t border-zinc-300 pb-16">
+      <section class="border-b border-zinc-300 px-5 py-10">
+        <p class="eyebrow">Redes sociais</p>
+        <h2 class="mt-3 text-3xl font-semibold tracking-tight">
+          Siga no Instagram
+        </h2>
+        <p class="mt-4 text-sm leading-6 text-zinc-600">
+          Acompanhe conteúdos, orientações e novidades do Instituto e do
+          fisioterapeuta.
+        </p>
+
+        <div class="social-list mt-7">
+          <a
+            [href]="instituteInstagramLink"
+            target="_blank"
+            rel="noreferrer"
+            class="social-link"
+            aria-label="Abrir Instagram do Instituto Thalisson Rodrigues"
+          >
+            <span class="social-icon">
+              <ng-container *ngTemplateOutlet="instagramIcon" />
+            </span>
+            <span class="social-text">Instituto Thalisson Rodrigues</span>
+            <span class="social-arrow" aria-hidden="true">↗</span>
+          </a>
+
+          <a
+            [href]="physiotherapistInstagramLink"
+            target="_blank"
+            rel="noreferrer"
+            class="social-link"
+            aria-label="Abrir Instagram de Thalisson Rodrigues"
+          >
+            <span class="social-icon">
+              <ng-container *ngTemplateOutlet="instagramIcon" />
+            </span>
+            <span class="social-text">Thalisson Rodrigues</span>
+            <span class="social-arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
+      <div class="footer-block">
+        <div class="footer-brand-block">
+          <div class="footer-brand">
+            <img
+              [src]="brandIcon"
+              alt=""
+              class="brand-logo"
+              aria-hidden="true"
+            />
+            <span>Instituto Thalisson Rodrigues</span>
+          </div>
+          <p class="footer-description">
+            Estratégia e design para empresas que querem avançar com clareza.
+          </p>
+        </div>
+
+        <div class="footer-links">
+          <button (click)="goTo('servicos')" class="text-left">Serviços</button>
+          <a href="mailto:contato@institutothalisson.com.br">E-mail</a>
+          <button (click)="goTo('inicio')" class="text-left">Sobre</button>
+          <a href="#linkedin">LinkedIn</a>
+        </div>
+      </div>
+      <div
+        class="border-t border-zinc-300 px-5 py-5 text-center text-[10px] leading-relaxed text-zinc-500"
+      >
+        Protótipo de baixa fidelidade · Instituto Thalisson Rodrigues
+      </div>
+    </footer>
+    <nav
+      aria-label="Navegação principal"
+      class="nav-shell fixed inset-x-0 bottom-0 z-30 mx-auto grid max-w-[430px] grid-cols-5 px-2 pb-2 pt-2 backdrop-blur"
+    >
+      @for (item of bottomNavigation; track item.id) {
+        <button
+          type="button"
+          (click)="goTo(item.id)"
+          class="nav-item relative flex flex-col items-center justify-center gap-1.5 text-[11px] font-medium"
+          [class.is-active]="page === item.id"
+          [attr.aria-current]="page === item.id ? 'page' : null"
+        >
+          <span class="nav-icon" aria-hidden="true">
+            @switch (item.id) {
+              @case ("inicio") {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 10.5 12 3l9 7.5" />
+                  <path d="M5 9.5V20h14V9.5" />
+                </svg>
+              }
+              @case ("fisioterapeuta") {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v13A2.5 2.5 0 0 1 16.5 21h-9A2.5 2.5 0 0 1 5 18.5v-13Z" />
+                  <path d="M8 8h8M8 12h8M8 16h5" />
+                </svg>
+              }
+              @case ("servicos") {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />
+                  <path d="M8 9h8M8 13h5" />
+                </svg>
+              }
+              @case ("contato") {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 9.5A2.5 2.5 0 0 1 6.5 7h11A2.5 2.5 0 0 1 20 9.5v5A2.5 2.5 0 0 1 17.5 17H7.5A2.5 2.5 0 0 1 5 14.5v-5Z" />
+                  <path d="m5 8 7 5 7-5" />
+                </svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 4.5h10a2.5 2.5 0 0 1 2.5 2.5v10A2.5 2.5 0 0 1 17 19.5H7A2.5 2.5 0 0 1 4.5 17V7A2.5 2.5 0 0 1 7 4.5Z" />
+                  <path d="M8 12h8M12 8v8" />
+                </svg>
+              }
+            }
+          </span>
+          <span class="nav-label">{{ item.label }}</span>
+        </button>
+      }
+    </nav>
+  }
+</div>
+
+<ng-template
+  #intro
+  let-eyebrow="eyebrow"
+  let-title="title"
+  let-description="description"
+>
+  <section class="page-intro px-5 py-16">
+    <p class="eyebrow">{{ eyebrow }}</p>
+    <h1
+      class="mt-5 text-5xl font-semibold leading-[1.05] tracking-[-0.045em]"
+    >
+      {{ title }}
+    </h1>
+    <p class="mt-7 text-lg leading-8 text-zinc-600">{{ description }}</p>
+  </section>
+</ng-template>
+
+<ng-template #steps let-items="items">
+  <div class="mt-8 grid gap-3">
+    @for (item of items; track item.title) {
+      <article class="border border-zinc-300 bg-[#f7f7f5] p-6">
+        <span class="font-mono text-xs text-zinc-500">{{ item.number }}</span>
+        <h3 class="mt-7 text-2xl font-semibold">{{ item.title }}</h3>
+        <p class="mt-3 leading-7 text-zinc-600">{{ item.description }}</p>
+      </article>
+    }
+  </div>
+</ng-template>
+
+<ng-template #instagramIcon>
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    class="size-5"
+    fill="none"
+    stroke="currentColor"
+  >
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
+  </svg>
+</ng-template>
+
+<ng-template #back>
+  <div class="px-5 pt-8">
+    <button
+      type="button"
+      (click)="goToPhysiotherapistMenu()"
+      class="border border-zinc-300 px-4 py-3 text-sm font-semibold"
+    >
+      ← Voltar para o menu
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #icon let-type="type">
+  <span
+    class="product-icon grid size-14 shrink-0 place-items-center rounded-full"
+    aria-hidden="true"
+  >
+    @switch (type) {
+      @case ("location") {
+        <svg viewBox="0 0 32 32" class="size-7" fill="none" stroke="currentColor">
+          <path d="M25 13c0 7-9 15-9 15S7 20 7 13a9 9 0 1 1 18 0Z" />
+          <circle cx="16" cy="13" r="3" />
+        </svg>
+      }
+      @case ("online") {
+        <svg viewBox="0 0 32 32" class="size-7" fill="none" stroke="currentColor">
+          <rect x="4" y="6" width="24" height="17" rx="2" />
+          <path d="M12 27h8M16 23v4" />
+          <circle cx="16" cy="13" r="3" />
+        </svg>
+      }
+      @case ("home") {
+        <svg viewBox="0 0 32 32" class="size-7" fill="none" stroke="currentColor">
+          <path d="m4 15 12-10 12 10" />
+          <path d="M7 13v14h18V13M13 27v-8h6v8" />
+        </svg>
+      }
+      @case ("mobility") {
+        <svg viewBox="0 0 32 32" class="size-7" fill="none" stroke="currentColor">
+          <circle cx="16" cy="6" r="3" />
+          <path d="m10 14 6-4 6 4M16 10v8l-5 8M16 18l6 8" />
+        </svg>
+      }
+      @default {
+        <svg viewBox="0 0 32 32" class="size-7" fill="none" stroke="currentColor">
+          <path d="M16 4 6 8v7c0 6.5 4.2 10.7 10 13 5.8-2.3 10-6.5 10-13V8L16 4Z" />
+          <path d="M11 17c1.5-3.8 4.7-5.5 9.5-5M12 21c2.7.4 5-.7 7-3.5" />
+        </svg>
+      }
+    }
+  </span>
+</ng-template>
