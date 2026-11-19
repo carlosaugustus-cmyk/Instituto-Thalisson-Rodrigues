@@ -856,6 +856,12 @@ textarea:focus-visible {
   margin-top: 2.5rem;
 }
 
+.android-shell form > button.mentorship-submit-button {
+  display: block;
+  width: 100%;
+  margin-top: 2rem;
+}
+
 .android-shell section > a.whatsapp-checkout-link {
   display: flex;
   align-items: center;
@@ -1211,6 +1217,68 @@ textarea:focus-visible {
     margin-left: 0;
     padding-right: 2rem;
     padding-left: 2rem;
+  }
+
+  .android-shell .store-content {
+    max-width: 1320px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .android-shell .store-category {
+    padding: 1.75rem 0 0;
+  }
+
+  .android-shell .store-category h2 {
+    max-width: none;
+    margin-bottom: 1.25rem;
+    font-size: 2rem;
+  }
+
+  .android-shell .store-product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+
+  .android-shell .store-product-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0;
+    padding: 1rem;
+  }
+
+  .android-shell .store-product-card > * + * {
+    margin-top: 0;
+  }
+
+  .android-shell .store-product-card .product-image-slot {
+    aspect-ratio: 16 / 10;
+    max-height: 15rem;
+  }
+
+  .android-shell .store-product-card .product-card-info {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .android-shell .store-product-card .product-card-info > * {
+    margin-top: 0;
+  }
+
+  .android-shell .store-product-card .product-card-footer {
+    margin-top: auto;
+  }
+
+  .android-shell .store-category .category-cart-link {
+    max-width: 24rem;
+    margin-left: auto;
   }
 
   .android-shell main > section:first-child {

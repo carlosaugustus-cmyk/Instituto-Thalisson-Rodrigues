@@ -244,7 +244,7 @@
             }
           "
         />
-        <section class="px-5 pb-20">
+        <section class="store-content px-5 pb-20">
           <p class="demo-notice">
             Produtos e valores fictícios, incluídos apenas para demonstração.
           </p>
@@ -259,12 +259,12 @@
           @for (category of productCategories; track category) {
             <section class="store-category">
               <h2 class="mb-5 text-3xl font-semibold">{{ category }}</h2>
-              <div class="grid gap-4">
+              <div class="store-product-grid">
                 @for (
                   product of productsInCategory(category);
                   track product.id
                 ) {
-                  <article class="product-card border border-zinc-300 p-4">
+                  <article class="store-product-card product-card border border-zinc-300 p-4">
                     <div class="product-image-slot">
                       @if (product.imageUrl) {
                         <img
@@ -1148,6 +1148,7 @@
               <button
                 type="submit"
                 class="mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+                [class.mentorship-submit-button]="interest?.source === 'Mentoria'"
               >
                 {{ interest?.source === "Loja" ? "Cadastrar para comprar" : "Enviar cadastro" }}
               </button>
