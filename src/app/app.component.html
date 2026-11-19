@@ -29,7 +29,26 @@
           </button>
         }
       </nav>
-      @if (page !== "inicio") {
+      @if (!isCheckoutPage && cartCount > 0) {
+        <button
+          type="button"
+          (click)="goTo('carrinho')"
+          class="cart-header-button"
+          [attr.aria-label]="
+            'Abrir carrinho com ' +
+            cartCount +
+            (cartCount === 1 ? ' produto' : ' produtos')
+          "
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 1.9-1.4L22 8H6" />
+            <circle cx="10" cy="20" r="1" />
+            <circle cx="18" cy="20" r="1" />
+          </svg>
+          <span>{{ cartCount }}</span>
+        </button>
+      }
+      @if (page !== "inicio" && !isCheckoutPage) {
         <button
           type="button"
           (click)="goTo('inicio')"
@@ -213,6 +232,7 @@
       }
 
       @case ("loja") {
+        <ng-container *ngTemplateOutlet="back" />
         <ng-container
           *ngTemplateOutlet="
             intro;
@@ -220,46 +240,575 @@
               eyebrow: 'Loja',
               title: 'Produtos para cuidar do seu movimento.',
               description:
-                'Conheça nossos programas e cadastre-se para comprar o produto ideal para você.',
+                'Equipamentos esportivos e fisioterapêuticos para apoiar sua rotina de movimento.',
             }
           "
         />
         <section class="px-5 pb-20">
-          <div class="grid gap-4">
-            @for (product of products; track product.title; let index = $index) {
-              <article
-                class="product-card border border-zinc-300 p-6 text-left"
+          <p class="demo-notice">
+            Produtos e valores fictícios, incluídos apenas para demonstração.
+          </p>
+          @if (cartMessage) {
+            <p class="cart-add-status" role="status" aria-live="polite">
+              {{ cartMessage }}
+              <button type="button" (click)="goTo('carrinho')">
+                Ver carrinho →
+              </button>
+            </p>
+          }
+          @for (category of productCategories; track category) {
+            <section class="store-category">
+              <h2 class="mb-5 text-3xl font-semibold">{{ category }}</h2>
+              <div class="grid gap-4">
+                @for (
+                  product of productsInCategory(category);
+                  track product.id
+                ) {
+                  <article class="product-card border border-zinc-300 p-4">
+                    <div class="product-image-slot">
+                      @if (product.imageUrl) {
+                        <img
+                          [src]="product.imageUrl"
+                          [alt]="product.title"
+                          loading="lazy"
+                        />
+                      } @else {
+                        <div
+                          class="product-image-placeholder"
+                          role="img"
+                          [attr.aria-label]="'Espaço para foto de ' + product.title"
+                        >
+                          Foto do produto
+                        </div>
+                      }
+                    </div>
+                    <div class="product-card-info">
+                      <div class="product-card-top">
+                        <span class="product-category">{{
+                          product.category
+                        }}</span>
+                        <button
+                          type="button"
+                          (click)="addToCart(product, false)"
+                          class="cart-icon-button"
+                          [attr.aria-label]="
+                            'Adicionar ' + product.title + ' ao carrinho'
+                          "
+                          [title]="'Adicionar ' + product.title + ' ao carrinho'"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path
+                              d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 1.9-1.4L22 8H6"
+                            />
+                            <circle cx="10" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                            <path d="M15 11h5m-2.5-2.5v5" />
+                          </svg>
+                        </button>
+                      </div>
+                      <h3 class="text-2xl font-medium leading-tight">
+                        {{ product.title }}
+                      </h3>
+                      <p class="leading-7 text-zinc-600">
+                        {{ product.description }}
+                      </p>
+                      <div class="product-card-footer">
+                        <span class="product-price">{{
+                          formatPrice(product.price)
+                        }}</span>
+                        <button
+                          type="button"
+                          (click)="openProduct(product)"
+                          class="product-detail-button"
+                        >
+                          Ver detalhes →
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                }
+              </div>
+              <button
+                type="button"
+                (click)="goTo('carrinho')"
+                class="category-cart-link border border-zinc-300"
               >
-                <ng-container
-                  *ngTemplateOutlet="icon; context: { type: product.icon }"
-                />
-                <span class="mt-10 block font-mono text-xs text-zinc-500"
-                  >0{{ index + 1 }}</span
-                >
-                <h2 class="mt-3 text-2xl font-medium leading-tight">
-                  {{ product.title }}
-                </h2>
-                <p class="mt-4 leading-7 text-zinc-600">
-                  {{ product.description }}
-                </p>
-                <button
-                  type="button"
-                  (click)="startRegistration('Loja', [product.title])"
-                  class="mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 text-base font-semibold text-white"
-                >
-                  <span aria-hidden="true">＋</span> Cadastrar-se para comprar
-                </button>
-              </article>
+                <span>Ir para o carrinho</span>
+                @if (cartCount > 0) {
+                  <span>{{ cartCount }} {{ cartCount === 1 ? "item" : "itens" }}</span>
+                }
+              </button>
+            </section>
+          }
+        </section>
+      }
+
+      @case ("produto") {
+        @if (selectedProduct; as product) {
+          <section class="px-5 pt-8">
+            <button
+              type="button"
+              (click)="goTo('loja')"
+              class="border border-zinc-300 px-4 py-3 text-sm font-semibold"
+            >
+              ← Voltar para a Loja
+            </button>
+          </section>
+          <ng-container
+            *ngTemplateOutlet="
+              intro;
+              context: {
+                eyebrow: product.category,
+                title: product.title,
+                description: product.description,
+              }
+            "
+          />
+          <section class="px-5 pb-20">
+            <article class="product-card border border-zinc-300 p-6">
+              <ng-container
+                *ngTemplateOutlet="icon; context: { type: product.icon }"
+              />
+              <p class="eyebrow">Sobre o produto</p>
+              <ul class="product-details">
+                @for (detail of product.details; track detail) {
+                  <li>{{ detail }}</li>
+                }
+              </ul>
+              <p class="product-price">{{ formatPrice(product.price) }}</p>
+              <p class="demo-notice">
+                Item e valor fictícios. Nenhuma compra ou cobrança real será
+                realizada.
+              </p>
+              <button
+                type="button"
+                (click)="addToCart(product)"
+                class="mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 font-semibold text-white"
+              >
+                <span aria-hidden="true">＋</span> Adicionar ao carrinho
+              </button>
+            </article>
+          </section>
+        } @else {
+          <section class="px-5 py-16">
+            <p class="leading-7 text-zinc-600">
+              Este produto não está disponível.
+            </p>
+            <button
+              type="button"
+              (click)="goTo('loja')"
+              class="mt-6 bg-zinc-900 px-6 py-4 font-semibold text-white"
+            >
+              Voltar para a Loja
+            </button>
+          </section>
+        }
+      }
+
+      @case ("carrinho") {
+        <ng-container
+          *ngTemplateOutlet="
+            intro;
+            context: {
+              eyebrow: 'Loja',
+              title: 'Seu carrinho.',
+              description: 'Confira seus produtos antes de continuar.',
             }
-          </div>
+          "
+        />
+        @if (cartLines.length > 0) {
+          <section class="px-5 pb-20">
+            <div class="grid gap-4">
+              @for (line of cartLines; track line.product.id) {
+                <article class="product-card border border-zinc-300 p-6">
+                  <p class="product-category">{{ line.product.category }}</p>
+                  <h2 class="mt-3 text-2xl font-semibold">
+                    {{ line.product.title }}
+                  </h2>
+                  <p class="mt-3 text-lg font-semibold">
+                    {{ formatPrice(line.product.price) }}
+                  </p>
+                  <div class="cart-quantity">
+                    <span>Quantidade</span>
+                    <div class="flex items-center gap-3">
+                      <button
+                        type="button"
+                        (click)="updateCartQuantity(line.product.id, -1)"
+                        [attr.aria-label]="'Diminuir ' + line.product.title"
+                        class="quantity-button"
+                      >
+                        −
+                      </button>
+                      <span aria-live="polite">{{ line.quantity }}</span>
+                      <button
+                        type="button"
+                        (click)="updateCartQuantity(line.product.id, 1)"
+                        [attr.aria-label]="'Aumentar ' + line.product.title"
+                        class="quantity-button"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <p class="mt-4 text-right font-semibold">
+                    Subtotal: {{ formatPrice(line.product.price * line.quantity) }}
+                  </p>
+                  <button
+                    type="button"
+                    (click)="removeFromCart(line.product.id)"
+                    class="mt-4 text-sm underline"
+                  >
+                    Remover
+                  </button>
+                </article>
+              }
+            </div>
+            <div class="order-summary mt-6">
+              <div class="flex justify-between gap-4">
+                <span>Subtotal dos produtos</span>
+                <strong>{{ formatPrice(cartSubtotal) }}</strong>
+              </div>
+              <p class="mt-3 text-sm">
+                Escolha a forma de pagamento na próxima etapa.
+              </p>
+            </div>
+            <button
+              type="button"
+              (click)="beginCheckout()"
+              class="mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+            >
+              Continuar para cadastro
+            </button>
+            <button
+              type="button"
+              (click)="goTo('loja')"
+              class="mt-3 w-full border border-zinc-300 px-6 py-4 font-semibold"
+            >
+              Continuar comprando
+            </button>
+          </section>
+        } @else {
+          <section class="px-5 pb-20">
+            <p class="leading-7 text-zinc-600">
+              Seu carrinho está vazio. Explore os produtos da Loja para começar.
+            </p>
+            <button
+              type="button"
+              (click)="goTo('loja')"
+              class="mt-6 bg-zinc-900 px-6 py-4 font-semibold text-white"
+            >
+              Ir para a Loja
+            </button>
+          </section>
+        }
+      }
+
+      @case ("cadastro-compra") {
+        <section class="px-5 py-16">
           <button
             type="button"
-            (click)="startRegistration('Loja', ['Programa Online', 'Programa de Reabilitação', 'Prevenção de Imobilidade'])"
-            class="mt-8 flex w-full items-center justify-center gap-3 border border-zinc-300 px-6 py-4 text-base font-semibold"
+            (click)="
+              goTo(treatmentCheckoutItems !== null ? 'tratamentos' : 'carrinho')
+            "
+            class="mb-8 border border-zinc-300 px-4 py-3 text-sm font-semibold"
           >
-            <span aria-hidden="true">＋</span> Cadastrar-se para comprar todos
+            {{
+              treatmentCheckoutItems !== null
+                ? "← Voltar aos tratamentos"
+                : "← Voltar ao carrinho"
+            }}
+          </button>
+          <p class="eyebrow">Etapa 1 de 2 · Cadastro</p>
+          <h1 class="mt-5 text-5xl font-semibold leading-tight">
+            Seus dados.
+          </h1>
+          <p class="mt-5 leading-7 text-zinc-600">
+            Preencha seus dados para seguir para a escolha de pagamento e
+            entrega.
+          </p>
+          <div class="order-summary mt-8">
+            <p class="eyebrow">Resumo do pedido</p>
+            @for (line of checkoutLines; track line.product.id) {
+              <div class="summary-row">
+                <span>{{ line.quantity }} × {{ line.product.title }}</span>
+                <strong>{{
+                  formatPrice(line.product.price * line.quantity)
+                }}</strong>
+              </div>
+            }
+            <div class="summary-row summary-total">
+              <span>Subtotal</span>
+              <strong>{{ formatPrice(checkoutSubtotal) }}</strong>
+            </div>
+          </div>
+          <form
+            class="mt-8 border border-zinc-300 bg-white p-6"
+            (ngSubmit)="continueToPayment()"
+          >
+            <div class="grid gap-6">
+              <label class="block text-sm font-semibold">
+                Nome completo
+                <input
+                  required
+                  name="checkoutName"
+                  type="text"
+                  autocomplete="name"
+                  [(ngModel)]="checkoutCustomer.name"
+                  placeholder="Seu nome"
+                />
+              </label>
+              <label class="block text-sm font-semibold">
+                E-mail
+                <input
+                  required
+                  name="checkoutEmail"
+                  type="email"
+                  autocomplete="email"
+                  [(ngModel)]="checkoutCustomer.email"
+                  placeholder="voce@exemplo.com"
+                />
+              </label>
+              <label class="block text-sm font-semibold">
+                Telefone
+                <input
+                  required
+                  name="checkoutPhone"
+                  type="tel"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  maxlength="15"
+                  [(ngModel)]="checkoutCustomer.phone"
+                  (input)="formatPhone($event)"
+                  placeholder="(00) 00000-0000"
+                />
+              </label>
+            </div>
+            <button
+              type="submit"
+              class="checkout-submit-button mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+            >
+              Continuar para pagamento
+            </button>
+          </form>
+          <p class="demo-notice mt-6">
+            Cadastro demonstrativo. Os dados não são enviados nem armazenados
+            em um servidor.
+          </p>
+        </section>
+      }
+
+      @case ("pagamento") {
+        <section class="px-5 py-16">
+          <button
+            type="button"
+            (click)="goTo('cadastro-compra')"
+            class="mb-8 border border-zinc-300 px-4 py-3 text-sm font-semibold"
+          >
+            ← Voltar ao cadastro
+          </button>
+          <p class="eyebrow">Etapa 2 de 2 · Pagamento e entrega</p>
+          <h1 class="mt-5 text-5xl font-semibold leading-tight">
+            Como prefere pagar?
+          </h1>
+          <p class="mt-5 leading-7 text-zinc-600">
+            Olá, {{ checkoutCustomer.name }}. Escolha uma forma de pagamento.
+          </p>
+
+          <div class="mt-8">
+            <p class="eyebrow">Forma de pagamento</p>
+            <div class="grid gap-3">
+              <button
+                type="button"
+                (click)="paymentMethod = 'pix'"
+                [attr.aria-pressed]="paymentMethod === 'pix'"
+                class="choice-card"
+                [class.choice-card--selected]="paymentMethod === 'pix'"
+              >
+                <strong>Pix</strong>
+                <span>Pagamento instantâneo (simulação)</span>
+              </button>
+              <button
+                type="button"
+                (click)="paymentMethod = 'credit'"
+                [attr.aria-pressed]="paymentMethod === 'credit'"
+                class="choice-card"
+                [class.choice-card--selected]="paymentMethod === 'credit'"
+              >
+                <strong>Cartão de crédito</strong>
+                <span>Opção de crédito (simulação)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="order-summary mt-8">
+            @for (line of checkoutLines; track line.product.id) {
+              <div class="summary-row">
+                <span>{{ line.quantity }} × {{ line.product.title }}</span>
+                <strong>{{
+                  formatPrice(line.product.price * line.quantity)
+                }}</strong>
+              </div>
+            }
+            <div class="summary-row summary-total">
+              <span>Total dos produtos</span>
+              <strong>{{ formatPrice(checkoutSubtotal) }}</strong>
+            </div>
+          </div>
+          <p class="demo-notice mt-6">
+            Os valores exibidos são fictícios. Nenhum pagamento real será
+            processado.
+          </p>
+          <button
+            type="button"
+            (click)="continueWithSelectedPayment()"
+            class="mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+          >
+            Continuar
           </button>
         </section>
+      }
+
+      @case ("pagamento-pix") {
+        <section class="px-5 py-16">
+          <button
+            type="button"
+            (click)="goTo('pagamento')"
+            class="mb-8 border border-zinc-300 px-4 py-3 text-sm font-semibold"
+          >
+            ← Voltar às opções
+          </button>
+          <p class="eyebrow">Pagamento via Pix</p>
+          <h1 class="mt-5 text-5xl font-semibold leading-tight">
+            Código Pix demonstrativo.
+          </h1>
+          <p class="mt-5 leading-7 text-zinc-600">
+            Copie o código abaixo para visualizar o fluxo. Ele é fictício, não é
+            um Pix válido e não deve ser usado no aplicativo do banco.
+          </p>
+          <label class="mt-8 block text-sm font-semibold">
+            Código Pix fictício
+            <textarea
+              readonly
+              rows="3"
+              [value]="pixDemoCode"
+              aria-label="Código Pix fictício"
+            ></textarea>
+          </label>
+          <button
+            type="button"
+            (click)="copyPixCode()"
+            class="mt-4 w-full border border-zinc-300 px-6 py-4 font-semibold"
+          >
+            Copiar código fictício
+          </button>
+          @if (pixCopyMessage) {
+            <p class="mt-3 text-sm" role="status">{{ pixCopyMessage }}</p>
+          }
+          <p class="demo-notice mt-6">
+            Esta tela apenas simula um pagamento. Nenhum valor será cobrado.
+          </p>
+          <button
+            type="button"
+            (click)="completeDemoPayment()"
+            class="mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+          >
+            Concluir pagamento demonstrativo
+          </button>
+        </section>
+      }
+
+      @case ("pagamento-credito") {
+        <section class="px-5 py-16">
+          <p class="eyebrow">Pagamento via crédito</p>
+          <h1 class="mt-5 text-5xl font-semibold leading-tight">
+            Finalize pelo WhatsApp.
+          </h1>
+          <p class="mt-5 leading-7 text-zinc-600">
+            Ao continuar, o WhatsApp será aberto com uma mensagem pronta para
+            você escolher o contato e combinar o pagamento.
+          </p>
+          <p class="demo-notice mt-6">
+            Esta é uma demonstração. O pedido será marcado como concluído
+            somente nesta tela; nenhuma cobrança real será feita.
+          </p>
+          <a
+            [href]="whatsappCheckoutUrl"
+            target="_blank"
+            rel="noreferrer"
+            (click)="completeDemoPayment()"
+            class="whatsapp-checkout-link mt-8 flex w-full items-center justify-center bg-zinc-900 px-6 py-4 text-center font-semibold text-white"
+          >
+            Abrir WhatsApp e concluir demonstração
+          </a>
+          <button
+            type="button"
+            (click)="goTo('pagamento')"
+            class="mt-4 w-full border border-zinc-300 px-6 py-4 font-semibold"
+          >
+            Voltar às opções
+          </button>
+        </section>
+      }
+
+      @case ("pagamento-concluido") {
+        @if (lastOrder; as order) {
+          <section
+            class="mx-auto flex min-h-[65vh] flex-col items-center px-5 py-16 text-center"
+          >
+            <span class="mb-6 grid size-14 place-items-center rounded-full border-2 border-zinc-900 text-2xl">
+              ✓
+            </span>
+            <p class="eyebrow">Pagamento concluído · demonstração</p>
+            <h1 class="mt-4 text-4xl font-semibold tracking-tight">
+              Obrigado, {{ order.customerName }}!
+            </h1>
+            <p class="mt-5 leading-7 text-zinc-600">
+              Pagamento via
+              {{ order.paymentMethod === "pix" ? "Pix" : "crédito" }} concluído
+              apenas na demonstração. Nenhuma cobrança real foi feita.
+            </p>
+            <div class="order-summary mt-8 w-full text-left">
+              @for (item of order.items; track item.product.id) {
+                <div class="summary-row">
+                  <span>{{ item.quantity }} × {{ item.product.title }}</span>
+                  <strong>{{
+                    formatPrice(item.product.price * item.quantity)
+                  }}</strong>
+                </div>
+              }
+              <div class="summary-row">
+                <span>Pagamento</span>
+                <strong>{{
+                  order.paymentMethod === "pix" ? "Pix (simulado)" : "Crédito (simulado)"
+                }}</strong>
+              </div>
+              <div class="summary-row summary-total">
+                <span>Total dos produtos</span>
+                <strong>{{ formatPrice(order.total) }}</strong>
+              </div>
+            </div>
+            <button
+              type="button"
+              (click)="goTo('loja')"
+              class="mt-8 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+            >
+              Voltar para a Loja
+            </button>
+          </section>
+        } @else {
+          <section class="px-5 py-16">
+            <p class="leading-7 text-zinc-600">
+              Não há pagamento demonstrativo nesta sessão.
+            </p>
+            <button
+              type="button"
+              (click)="goTo('loja')"
+              class="mt-6 bg-zinc-900 px-6 py-4 font-semibold text-white"
+            >
+              Ir para a Loja
+            </button>
+          </section>
+        }
       }
 
       @case ("fisioterapeuta") {
@@ -323,9 +872,9 @@
           <div class="menu-grid mt-8">
             @for (
               link of [
+                { page: "loja", label: "Loja" },
                 { page: "tratamentos", label: "Tratamentos" },
                 { page: "contato", label: "Mentoria" },
-                { page: "loja", label: "Loja" },
                 { page: "rpa", label: "Programa RPA" },
               ];
               track link.page
@@ -388,11 +937,15 @@
               eyebrow: 'Tratamentos',
               title: 'Escolha como deseja ser acompanhado.',
               description:
-                'Conheça as modalidades e selecione a quantidade de programas disponível em cada tratamento.',
+                'Conheça as modalidades, selecione os programas e siga para cadastro e pagamento.',
             }
           "
         />
         <section class="px-5 pb-20">
+          <p class="demo-notice">
+            Valores fictícios para demonstração; os preços reais dos tratamentos
+            devem ser confirmados com o Instituto.
+          </p>
           <div class="grid gap-4">
             @for (
               treatment of treatments;
@@ -445,6 +998,9 @@
                         <span class="treatment-copy">
                           <span class="treatment-title">{{ product.title }}</span>
                           <span class="treatment-summary">{{ product.summary }}</span>
+                          <span class="treatment-price">{{
+                            formatPrice(product.price)
+                          }}</span>
                         </span>
                         <span
                           class="treatment-check"
@@ -468,7 +1024,7 @@
                   class="treatment-cta mt-6 flex w-full items-center justify-center gap-3 rounded-full px-5 py-3 font-semibold transition-colors"
                   [class.treatment-cta--disabled]="!canRegisterTreatment(treatment.title)"
                 >
-                  <span aria-hidden="true">✓</span> Me interessei
+                  <span aria-hidden="true">→</span> Continuar para cadastro
                 </button>
               </article>
             }
@@ -600,14 +1156,16 @@
         }
       }
     }
-    @if (page === "tratamentos" || page === "contato") {
+    @if (
+      page === "tratamentos" || page === "contato" || page === "loja"
+    ) {
       <ng-container
         *ngTemplateOutlet="back; context: { position: 'bottom' }"
       />
     }
   </main>
 
-  @if (page !== "cadastro") {
+  @if (page !== "cadastro" && !isCheckoutPage) {
     <footer class="border-t border-zinc-300 pb-16">
       <section class="border-b border-zinc-300 px-5 py-10">
         <p class="eyebrow">Redes sociais</p>
@@ -706,8 +1264,9 @@
               }
               @case ("loja") {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />
-                  <path d="M8 9h8M8 13h5" />
+                  <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 1.9-1.4L22 8H6" />
+                  <circle cx="10" cy="20" r="1" />
+                  <circle cx="18" cy="20" r="1" />
                 </svg>
               }
               @case ("contato") {
