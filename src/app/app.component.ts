@@ -5,16 +5,15 @@ import { FormsModule } from "@angular/forms"
 type Page =
   | "inicio"
   | "conteudo"
-  | "servicos"
   | "contato"
-  | "atendimento"
+  | "loja"
   | "cadastro"
   | "fisioterapeuta"
   | "tratamentos"
   | "rpa"
 
 type Interest = {
-  source: "Produtos" | "Mentoria" | "Tratamentos" | "Atendimento"
+  source: "Loja" | "Mentoria" | "Tratamentos"
   items: string[]
 }
 
@@ -40,17 +39,14 @@ export class AppComponent {
   readonly brandIcon = "imports/icone-thalisson.png"
   readonly instituteEmblem = "imports/instituto-thalisson-emblema.png"
   readonly thalissonPhoto = "imports/Thalisson-Rodrigues.png"
-  readonly appointmentAddressLink =
-    "https://www.google.com/maps/search/?api=1&query=DF+Plaza+Shopping+Brasilia"
   readonly instituteInstagramLink = "https://www.instagram.com/"
   readonly physiotherapistInstagramLink = "https://www.instagram.com/"
 
   readonly pages: Page[] = [
     "inicio",
     "conteudo",
-    "servicos",
     "contato",
-    "atendimento",
+    "loja",
     "cadastro",
     "fisioterapeuta",
     "tratamentos",
@@ -62,7 +58,7 @@ export class AppComponent {
     { id: "fisioterapeuta", label: "Fisioterapeuta" },
     { id: "tratamentos", label: "Tratamento" },
     { id: "contato", label: "Mentoria" },
-    { id: "atendimento", label: "Atendimento" },
+    { id: "loja", label: "Loja" },
   ]
 
   readonly rpaPillars = [
@@ -171,24 +167,6 @@ export class AppComponent {
       description:
         "Exercícios e orientações para preservar a mobilidade das articulações, manter a força e proteger a autonomia no dia a dia.",
       icon: "prevention",
-    },
-  ]
-
-  readonly attendanceTypes: {
-    title: string
-    description: string
-    detail: string
-    notice?: string
-    icon: Icon
-  }[] = [
-    {
-      title: "Atendimento Presencial",
-      description:
-        "Avaliação e acompanhamento individual no consultório, com um plano de cuidado construído de acordo com suas necessidades e objetivos.",
-      detail: "DF Plaza Shopping · Torre B · Sala 709",
-      notice:
-        "Pacientes menores de idade devem comparecer acompanhados por um responsável.",
-      icon: "location",
     },
   ]
 
@@ -363,10 +341,9 @@ export class AppComponent {
       if (!value) return null
       const parsed = JSON.parse(value) as Partial<Interest>
       const validSource = [
-        "Produtos",
+        "Loja",
         "Mentoria",
         "Tratamentos",
-        "Atendimento",
       ].includes(parsed.source ?? "")
       const validItems =
         Array.isArray(parsed.items) &&

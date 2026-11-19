@@ -203,24 +203,24 @@
           </p>
           <button
             type="button"
-            (click)="goTo('atendimento')"
+            (click)="goTo('loja')"
             class="mt-8 flex w-full items-center justify-between border border-zinc-300 px-6 py-4 font-semibold"
           >
-            Conhecer o atendimento
+            Conhecer a Loja
             <span aria-hidden="true">→</span>
           </button>
         </section>
       }
 
-      @case ("servicos") {
+      @case ("loja") {
         <ng-container
           *ngTemplateOutlet="
             intro;
             context: {
-              eyebrow: 'Produtos',
-              title: 'Escolha o cuidado ideal para você.',
+              eyebrow: 'Loja',
+              title: 'Produtos para cuidar do seu movimento.',
               description:
-                'Conheça nossos programas e selecione a opção que mais combina com o seu momento.',
+                'Conheça nossos programas e cadastre-se para comprar o produto ideal para você.',
             }
           "
         />
@@ -244,20 +244,20 @@
                 </p>
                 <button
                   type="button"
-                  (click)="startRegistration('Produtos', [product.title])"
+                  (click)="startRegistration('Loja', [product.title])"
                   class="mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 text-base font-semibold text-white"
                 >
-                  <span aria-hidden="true">✓</span> Me interessei
+                  <span aria-hidden="true">＋</span> Cadastrar-se para comprar
                 </button>
               </article>
             }
           </div>
           <button
             type="button"
-            (click)="startRegistration('Produtos', ['Programa Online', 'Programa de Reabilitação', 'Prevenção de Imobilidade'])"
+            (click)="startRegistration('Loja', ['Programa Online', 'Programa de Reabilitação', 'Prevenção de Imobilidade'])"
             class="mt-8 flex w-full items-center justify-center gap-3 border border-zinc-300 px-6 py-4 text-base font-semibold"
           >
-            <span aria-hidden="true">✓</span> Me interessei em todos
+            <span aria-hidden="true">＋</span> Cadastrar-se para comprar todos
           </button>
         </section>
       }
@@ -325,7 +325,7 @@
               link of [
                 { page: "tratamentos", label: "Tratamentos" },
                 { page: "contato", label: "Mentoria" },
-                { page: "atendimento", label: "Atendimento" },
+                { page: "loja", label: "Loja" },
                 { page: "rpa", label: "Programa RPA" },
               ];
               track link.page
@@ -376,73 +376,6 @@
           >
             <span aria-hidden="true">✓</span> Tenho interesse
           </button>
-        </section>
-      }
-
-      @case ("atendimento") {
-        <ng-container *ngTemplateOutlet="back" />
-        <ng-container
-          *ngTemplateOutlet="
-            intro;
-            context: {
-              eyebrow: 'Atendimento',
-              title: 'Cuidado onde fizer mais sentido para você.',
-              description:
-                'Atendimento presencial individualizado, com avaliação próxima e um plano de cuidado construído para suas necessidades.',
-            }
-          "
-        />
-        <section class="grid gap-4 px-5 pb-20">
-          @for (item of attendanceTypes; track item.title; let index = $index) {
-            <article
-              class="attendance-card border border-zinc-300 bg-[#f7f7f5] p-6"
-            >
-              <ng-container
-                *ngTemplateOutlet="icon; context: { type: item.icon }"
-              />
-              <span class="mt-8 block font-mono text-xs text-zinc-500"
-                >0{{ index + 1 }}</span
-              >
-              <h2 class="mt-3 text-2xl font-semibold">{{ item.title }}</h2>
-              <p class="mt-4 leading-7 text-zinc-600">
-                {{ item.description }}
-              </p>
-              <div class="address-block">
-                <p class="eyebrow">Endereço</p>
-                <div class="address-detail">
-                  <span class="address-marker" aria-hidden="true"></span>
-                  <p>{{ item.detail }}</p>
-                </div>
-                <a
-                  [href]="appointmentAddressLink"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="address-map-link"
-                >
-                  <span>Abrir endereço no mapa</span>
-                  <span class="address-map-arrow" aria-hidden="true">↗</span>
-                </a>
-              </div>
-              @if (item.notice) {
-                <p
-                  class="attendance-notice"
-                >
-                  <span class="notice-mark" aria-hidden="true">i</span>
-                  {{ item.notice }}
-                </p>
-              }
-              <button
-                type="button"
-                (click)="
-                  startRegistration('Atendimento', ['Consulta presencial'])
-                "
-                class="mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 font-semibold text-white"
-              >
-                <span aria-hidden="true">＋</span>
-                Marcar consulta
-              </button>
-            </article>
-          }
         </section>
       }
 
@@ -581,24 +514,31 @@
                 ← Voltar para mentoria
               </button>
             }
-            @if (interest?.source === "Atendimento") {
+            @if (interest?.source === "Loja") {
               <button
                 type="button"
-                (click)="goTo('atendimento')"
+                (click)="goTo('loja')"
                 class="mb-10 border border-zinc-300 px-4 py-3 text-sm font-semibold"
               >
-                ← Voltar para atendimento
+                ← Voltar para a Loja
               </button>
             }
-            <p class="eyebrow">Cadastro de interesse</p>
+            <p class="eyebrow">
+              {{ interest?.source === "Loja" ? "Cadastro para compra" : "Cadastro de interesse" }}
+            </p>
             <h1
               class="mt-5 text-5xl font-semibold leading-tight tracking-[-0.04em]"
             >
               Falta pouco.
             </h1>
             <p class="mt-6 leading-7 text-zinc-600">
-              Preencha seus dados para que o Instituto possa entrar em contato
-              com você.
+              @if (interest?.source === "Loja") {
+                Preencha seus dados para continuar com a compra do produto
+                escolhido.
+              } @else {
+                Preencha seus dados para que o Instituto possa entrar em contato
+                com você.
+              }
             </p>
             @if (interest) {
               <div class="mt-8 border border-zinc-300 bg-zinc-100 p-5">
@@ -653,16 +593,14 @@
                 type="submit"
                 class="mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
               >
-                Enviar cadastro
+                {{ interest?.source === "Loja" ? "Cadastrar para comprar" : "Enviar cadastro" }}
               </button>
             </form>
           </section>
         }
       }
     }
-    @if (
-      page === "tratamentos" || page === "contato" || page === "atendimento"
-    ) {
+    @if (page === "tratamentos" || page === "contato") {
       <ng-container
         *ngTemplateOutlet="back; context: { position: 'bottom' }"
       />
@@ -728,7 +666,7 @@
         </div>
 
         <div class="footer-links">
-          <button (click)="goTo('servicos')" class="text-left">Serviços</button>
+          <button (click)="goTo('loja')" class="text-left">Loja</button>
           <a href="mailto:contato@institutothalisson.com.br">E-mail</a>
           <button (click)="goTo('inicio')" class="text-left">Sobre</button>
           <a href="#linkedin">LinkedIn</a>
@@ -766,7 +704,7 @@
                   <path d="M8 8h8M8 12h8M8 16h5" />
                 </svg>
               }
-              @case ("servicos") {
+              @case ("loja") {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />
                   <path d="M8 9h8M8 13h5" />
