@@ -7,7 +7,7 @@
     <div class="mx-auto flex h-16 items-center justify-between px-5">
       <button
         type="button"
-        (click)="goTo('inicio')"
+        (click)="goTo('inicio', 'back')"
         class="header-brand flex items-center gap-3 text-left"
         aria-label="Ir para o início"
       >
@@ -29,6 +29,24 @@
           </button>
         }
       </nav>
+      <button
+        type="button"
+        (click)="toggleTheme()"
+        class="theme-toggle"
+        [attr.aria-label]="darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'"
+        [title]="darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'"
+      >
+        @if (darkMode) {
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z" />
+          </svg>
+        }
+      </button>
       @if (!isCheckoutPage && cartCount > 0) {
         <button
           type="button"
@@ -51,7 +69,7 @@
       @if (page !== "inicio" && !isCheckoutPage) {
         <button
           type="button"
-          (click)="goTo('inicio')"
+          (click)="goTo('inicio', 'back')"
           class="mobile-home-button border border-zinc-400 px-3 py-2 text-xs font-semibold"
         >
           Inicio
@@ -60,7 +78,31 @@
     </div>
   </header>
 
+  @if (pageTransitionActive) {
+    <div
+      class="page-transition-indicator"
+      [class.page-transition-indicator--back]="pageTransitionDirection === 'back'"
+      aria-hidden="true"
+    >
+      @if (pageTransitionDirection === "forward") {
+        <img [src]="brandIcon" alt="" />
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12h14m-6-6 6 6-6 6" />
+        </svg>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5m6-6-6 6 6 6" />
+        </svg>
+        <img [src]="brandIcon" alt="" />
+      }
+    </div>
+  }
+
   <main class="pb-20">
+    @if (stockErrorMessage) {
+      <p class="inventory-error" role="alert">{{ stockErrorMessage }}</p>
+    }
+
     @switch (page) {
       @case ("inicio") {
         <ng-container
@@ -292,9 +334,16 @@
                           (click)="addToCart(product, false)"
                           class="cart-icon-button"
                           [attr.aria-label]="
-                            'Adicionar ' + product.title + ' ao carrinho'
+                            availableStock(product.id) === 0
+                              ? product.title + ' esgotado'
+                              : 'Adicionar ' + product.title + ' ao carrinho'
                           "
-                          [title]="'Adicionar ' + product.title + ' ao carrinho'"
+                          [title]="
+                            availableStock(product.id) === 0
+                              ? 'Produto esgotado'
+                              : 'Adicionar ' + product.title + ' ao carrinho'
+                          "
+                          [disabled]="availableStock(product.id) === 0"
                         >
                           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path
@@ -311,6 +360,15 @@
                       </h3>
                       <p class="leading-7 text-zinc-600">
                         {{ product.description }}
+                      </p>
+                      <p
+                        class="product-stock-status"
+                        [class.product-stock-status--sold-out]="
+                          availableStock(product.id) === 0
+                        "
+                        role="status"
+                      >
+                        {{ stockStatus(product.id) }}
                       </p>
                       <div class="product-card-footer">
                         <span class="product-price">{{
@@ -348,7 +406,7 @@
           <section class="px-5 pt-8">
             <button
               type="button"
-              (click)="goTo('loja')"
+              (click)="goTo('loja', 'back')"
               class="border border-zinc-300 px-4 py-3 text-sm font-semibold"
             >
               ← Voltar para a Loja
@@ -366,15 +424,35 @@
           />
           <section class="px-5 pb-20">
             <article class="product-card border border-zinc-300 p-6">
-              <ng-container
-                *ngTemplateOutlet="icon; context: { type: product.icon }"
-              />
+              @if (product.imageUrl) {
+                <div class="product-image-slot">
+                  <img
+                    [src]="product.imageUrl"
+                    [alt]="product.title"
+                    loading="lazy"
+                  />
+                </div>
+              }
               <p class="eyebrow">Sobre o produto</p>
               <ul class="product-details">
                 @for (detail of product.details; track detail) {
                   <li>{{ detail }}</li>
                 }
               </ul>
+              <p
+                class="product-stock-status"
+                [class.product-stock-status--sold-out]="
+                  availableStock(product.id) === 0
+                "
+                role="status"
+              >
+                {{ stockStatus(product.id) }}
+              </p>
+              @if (cartMessage) {
+                <p class="cart-add-status" role="status" aria-live="polite">
+                  {{ cartMessage }}
+                </p>
+              }
               <p class="product-price">{{ formatPrice(product.price) }}</p>
               <p class="demo-notice">
                 Item e valor fictícios. Nenhuma compra ou cobrança real será
@@ -383,9 +461,14 @@
               <button
                 type="button"
                 (click)="addToCart(product)"
-                class="mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 font-semibold text-white"
+                class="product-add-button mt-6 flex w-full items-center justify-center gap-3 bg-zinc-900 px-6 py-4 font-semibold text-white"
+                [disabled]="availableStock(product.id) === 0"
               >
-                <span aria-hidden="true">＋</span> Adicionar ao carrinho
+                @if (availableStock(product.id) === 0) {
+                  Esgotado
+                } @else {
+                  <span aria-hidden="true">＋</span> Adicionar ao carrinho
+                }
               </button>
             </article>
           </section>
@@ -396,7 +479,7 @@
             </p>
             <button
               type="button"
-              (click)="goTo('loja')"
+              (click)="goTo('loja', 'back')"
               class="mt-6 bg-zinc-900 px-6 py-4 font-semibold text-white"
             >
               Voltar para a Loja
@@ -445,6 +528,12 @@
                         (click)="updateCartQuantity(line.product.id, 1)"
                         [attr.aria-label]="'Aumentar ' + line.product.title"
                         class="quantity-button"
+                        [disabled]="availableStock(line.product.id) === 0"
+                        [title]="
+                          availableStock(line.product.id) === 0
+                            ? 'Limite de estoque atingido'
+                            : 'Aumentar quantidade'
+                        "
                       >
                         +
                       </button>
@@ -464,7 +553,7 @@
               }
             </div>
             <div class="order-summary mt-6">
-              <div class="flex justify-between gap-4">
+              <div class="summary-row">
                 <span>Subtotal dos produtos</span>
                 <strong>{{ formatPrice(cartSubtotal) }}</strong>
               </div>
@@ -472,16 +561,25 @@
                 Escolha a forma de pagamento na próxima etapa.
               </p>
             </div>
+            <div class="cart-action-buttons">
+              <button
+                type="button"
+                (click)="beginCheckout()"
+                class="w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+              >
+                Continuar para cadastro
+              </button>
+              <button
+                type="button"
+                (click)="clearCart()"
+                class="w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
+              >
+                Remover tudo
+              </button>
+            </div>
             <button
               type="button"
-              (click)="beginCheckout()"
-              class="mt-6 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
-            >
-              Continuar para cadastro
-            </button>
-            <button
-              type="button"
-              (click)="goTo('loja')"
+              (click)="goTo('loja', 'back')"
               class="mt-3 w-full border border-zinc-300 px-6 py-4 font-semibold"
             >
               Continuar comprando
@@ -494,7 +592,7 @@
             </p>
             <button
               type="button"
-              (click)="goTo('loja')"
+              (click)="goTo('loja', 'back')"
               class="mt-6 bg-zinc-900 px-6 py-4 font-semibold text-white"
             >
               Ir para a Loja
@@ -508,7 +606,10 @@
           <button
             type="button"
             (click)="
-              goTo(treatmentCheckoutItems !== null ? 'tratamentos' : 'carrinho')
+              goTo(
+                treatmentCheckoutItems !== null ? 'tratamentos' : 'carrinho',
+                'back'
+              )
             "
             class="mb-8 border border-zinc-300 px-4 py-3 text-sm font-semibold"
           >
@@ -601,7 +702,7 @@
         <section class="px-5 py-16">
           <button
             type="button"
-            (click)="goTo('cadastro-compra')"
+            (click)="goTo('cadastro-compra', 'back')"
             class="mb-8 border border-zinc-300 px-4 py-3 text-sm font-semibold"
           >
             ← Voltar ao cadastro
@@ -640,6 +741,34 @@
             </div>
           </div>
 
+          @if (treatmentCheckoutItems === null) {
+            <div class="mt-8">
+              <p class="eyebrow">Como deseja receber?</p>
+              <div class="grid gap-3">
+                <button
+                  type="button"
+                  (click)="fulfillment = 'delivery'"
+                  [attr.aria-pressed]="fulfillment === 'delivery'"
+                  class="choice-card"
+                  [class.choice-card--selected]="fulfillment === 'delivery'"
+                >
+                  <strong>Receber por frete</strong>
+                  <span>O valor e os detalhes do frete serão negociados via WhatsApp.</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="fulfillment = 'pickup'"
+                  [attr.aria-pressed]="fulfillment === 'pickup'"
+                  class="choice-card"
+                  [class.choice-card--selected]="fulfillment === 'pickup'"
+                >
+                  <strong>Retirar no Instituto</strong>
+                  <span>Retirada presencial no Instituto, sem frete.</span>
+                </button>
+              </div>
+            </div>
+          }
+
           <div class="order-summary mt-8">
             @for (line of checkoutLines; track line.product.id) {
               <div class="summary-row">
@@ -672,7 +801,7 @@
         <section class="px-5 py-16">
           <button
             type="button"
-            (click)="goTo('pagamento')"
+            (click)="goTo('pagamento', 'back')"
             class="mb-8 border border-zinc-300 px-4 py-3 text-sm font-semibold"
           >
             ← Voltar às opções
@@ -731,6 +860,11 @@
             Esta é uma demonstração. O pedido será marcado como concluído
             somente nesta tela; nenhuma cobrança real será feita.
           </p>
+          @if (treatmentCheckoutItems === null && fulfillment === "delivery") {
+            <p class="demo-notice mt-6">
+              O valor e os detalhes do frete serão negociados via WhatsApp.
+            </p>
+          }
           <a
             [href]="whatsappCheckoutUrl"
             target="_blank"
@@ -742,7 +876,7 @@
           </a>
           <button
             type="button"
-            (click)="goTo('pagamento')"
+            (click)="goTo('pagamento', 'back')"
             class="mt-4 w-full border border-zinc-300 px-6 py-4 font-semibold"
           >
             Voltar às opções
@@ -787,9 +921,18 @@
                 <strong>{{ formatPrice(order.total) }}</strong>
               </div>
             </div>
+            @if (order.fulfillment === "delivery") {
+              <p class="demo-notice mt-6 text-left">
+                O valor e os detalhes do frete serão negociados via WhatsApp.
+              </p>
+            } @else if (order.fulfillment === "pickup") {
+              <p class="mt-6 text-sm text-zinc-600">
+                Retirada escolhida: no Instituto, sem frete.
+              </p>
+            }
             <button
               type="button"
-              (click)="goTo('loja')"
+              (click)="goTo('loja', 'back')"
               class="mt-8 w-full bg-zinc-900 px-6 py-4 font-semibold text-white"
             >
               Voltar para a Loja
@@ -1055,7 +1198,7 @@
             @if (interest?.source === "Tratamentos") {
               <button
                 type="button"
-                (click)="goTo('tratamentos')"
+                (click)="goTo('tratamentos', 'back')"
                 class="mb-10 border border-zinc-300 px-4 py-3 text-sm font-semibold"
               >
                 ← Voltar para tratamentos
@@ -1064,7 +1207,7 @@
             @if (interest?.source === "Mentoria") {
               <button
                 type="button"
-                (click)="goTo('contato')"
+                (click)="goTo('contato', 'back')"
                 class="mb-10 border border-zinc-300 px-4 py-3 text-sm font-semibold"
               >
                 ← Voltar para mentoria
@@ -1073,7 +1216,7 @@
             @if (interest?.source === "Loja") {
               <button
                 type="button"
-                (click)="goTo('loja')"
+                (click)="goTo('loja', 'back')"
                 class="mb-10 border border-zinc-300 px-4 py-3 text-sm font-semibold"
               >
                 ← Voltar para a Loja
@@ -1227,7 +1370,7 @@
         <div class="footer-links">
           <button (click)="goTo('loja')" class="text-left">Loja</button>
           <a href="mailto:contato@institutothalisson.com.br">E-mail</a>
-          <button (click)="goTo('inicio')" class="text-left">Sobre</button>
+          <button (click)="goTo('inicio', 'back')" class="text-left">Sobre</button>
           <a href="#linkedin">LinkedIn</a>
         </div>
       </div>

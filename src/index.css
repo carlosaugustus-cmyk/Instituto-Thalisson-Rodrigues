@@ -131,6 +131,83 @@ textarea:focus-visible {
   transform: translateY(-1px);
 }
 
+.page-transition-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--stroke-strong);
+  border-radius: 9999px;
+  background: var(--bg-shell);
+  color: var(--text);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  animation: page-transition-forward 900ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.page-transition-indicator--back {
+  animation-name: page-transition-back;
+}
+
+.page-transition-indicator img {
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  border: 1px solid var(--stroke-strong);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.page-transition-indicator svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes page-transition-forward {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50vw - 50%), -50%);
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(50vw + 50%), -50%);
+  }
+}
+
+@keyframes page-transition-back {
+  0% {
+    opacity: 0;
+    transform: translate(calc(50vw + 50%), -50%);
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50vw - 50%), -50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-indicator {
+    display: none;
+    animation: none;
+  }
+}
+
 .android-shell button,
 .android-shell a,
 .android-shell input,
@@ -148,9 +225,12 @@ textarea:focus-visible {
 
 .android-shell .text-zinc-900,
 .android-shell .text-zinc-950,
-.android-shell .text-zinc-800,
-.android-shell .text-white {
+.android-shell .text-zinc-800 {
   color: var(--text) !important;
+}
+
+.android-shell .text-white {
+  color: #ffffff !important;
 }
 
 .android-shell .text-zinc-600,
@@ -242,7 +322,28 @@ textarea:focus-visible {
 }
 
 .android-shell header button[aria-label="Ir para o início"] {
-  max-width: calc(100% - 8.5rem);
+  max-width: calc(100% - 11.5rem);
+}
+
+.android-shell .theme-toggle {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.65rem;
+  height: 2.65rem;
+  place-items: center;
+  border: 1px solid var(--stroke-strong);
+  border-radius: 0.8rem;
+  background: var(--bg-surface);
+  color: var(--text);
+}
+
+.theme-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .android-shell .cart-header-button {
@@ -420,6 +521,13 @@ textarea:focus-visible {
   color: var(--text);
 }
 
+.android-shell .cart-icon-button:disabled,
+.android-shell .quantity-button:disabled,
+.android-shell .product-add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .cart-icon-button svg {
   width: 1.35rem;
   height: 1.35rem;
@@ -459,15 +567,52 @@ textarea:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
-.android-shell .product-detail-button {
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 0.5rem;
-  padding: 0.5rem 0;
-  background: transparent;
-  color: var(--olive-soft);
+.product-stock-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.product-stock-status--sold-out {
+  color: #fda29b;
+}
+
+.inventory-error {
+  margin: 1rem 1.25rem 0;
+  border: 1px solid rgba(180, 35, 24, 0.35);
+  border-radius: var(--radius-md);
+  padding: 0.8rem 1rem;
+  background: rgba(180, 35, 24, 0.12);
+  color: #fda29b;
   font-size: 0.88rem;
+}
+
+.android-shell .product-detail-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  border: 0;
+  border-radius: 9999px;
+  padding: 0.75rem 1rem;
+  background: #37412f;
+  color: #ffffff;
+  font-size: 0.95rem;
   font-weight: 700;
+  line-height: 1.2;
+  box-shadow: 0 10px 18px rgba(88, 103, 90, 0.24);
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.android-shell .product-detail-button:hover {
+  background: #2f3929;
+  box-shadow: 0 12px 20px rgba(55, 65, 47, 0.3);
+  transform: translateY(-1px);
 }
 
 .cart-add-status {
@@ -819,7 +964,7 @@ textarea:focus-visible {
 .android-shell button.bg-zinc-900,
 .android-shell .bg-zinc-900 {
   background: linear-gradient(180deg, #37412F, #37412F);
-  color: var(--text);
+  color: #ffffff;
   border: 1px solid rgba(255,255,255,0.08);
   padding: 0.8rem 1rem;
   font-weight: 600;
@@ -868,6 +1013,18 @@ textarea:focus-visible {
   justify-content: center;
   width: 100%;
   box-sizing: border-box;
+}
+
+.android-shell .cart-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.android-shell .cart-action-buttons > button {
+  display: block;
+  width: 100%;
 }
 
 .android-shell label {
@@ -1076,7 +1233,7 @@ textarea:focus-visible {
 
 .menu-button-arrow {
   font-size: 1.2rem;
-  color: var(--muted);
+  color: #ffffff;
   margin-left: 0.4rem;
 }
 
@@ -1168,6 +1325,10 @@ textarea:focus-visible {
   .android-shell header button[aria-label="Ir para o início"] {
     max-width: none;
     flex: none;
+  }
+
+  .android-shell .theme-toggle {
+    margin-left: 0.75rem;
   }
 
   .desktop-navigation {
@@ -1377,4 +1538,151 @@ textarea:focus-visible {
     font-size: 0.66rem;
     letter-spacing: 0.08em;
   }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg-shell: #f7f8f5;
+  --bg-outer: #e8ece8;
+  --bg-surface: rgba(31, 42, 33, 0.035);
+  --bg-surface-strong: rgba(31, 42, 33, 0.07);
+  --stroke: rgba(31, 42, 33, 0.12);
+  --stroke-strong: rgba(31, 42, 33, 0.22);
+  --text: #1F2A24;
+  --muted: #3E4A43;
+  --soft: #5B6B61;
+  --olive: #58675a;
+  --olive-soft: #506451;
+  --glow: rgba(88, 103, 90, 0.12);
+}
+
+:root[data-theme="light"] .android-shell header {
+  background: rgba(247, 248, 245, 0.94);
+}
+
+:root[data-theme="light"] .android-shell main > section:first-child::before {
+  background: rgba(88, 103, 90, 0.12);
+}
+
+:root[data-theme="light"] .android-shell > div:first-child {
+  background: #e9ede8;
+  color: var(--muted);
+}
+
+:root[data-theme="light"] .product-card,
+:root[data-theme="light"] .android-shell .grid > article,
+:root[data-theme="light"] .android-shell article.border,
+:root[data-theme="light"] .android-shell .order-summary {
+  background: linear-gradient(180deg, #ffffff, #f3f5f1);
+  box-shadow: 0 12px 28px rgba(31, 42, 33, 0.08);
+}
+
+:root[data-theme="light"] .android-shell .product-image-slot {
+  background: #eef1ec;
+}
+
+:root[data-theme="light"] .android-shell .nav-shell {
+  background: rgba(247, 248, 245, 0.97);
+  box-shadow: 0 -10px 30px rgba(31, 42, 33, 0.1);
+}
+
+:root[data-theme="light"] .android-shell > nav button.is-active .nav-icon {
+  color: #f3f1ee;
+}
+
+:root[data-theme="light"] .android-shell .product-icon {
+  color: #f3f1ee;
+}
+
+:root[data-theme="light"] .android-shell input,
+:root[data-theme="light"] .android-shell textarea {
+  background: #ffffff;
+  border-color: var(--stroke-strong);
+  color: var(--text);
+}
+
+:root[data-theme="light"] .android-shell input::placeholder,
+:root[data-theme="light"] .android-shell textarea::placeholder {
+  color: var(--soft);
+}
+
+:root[data-theme="light"] .android-shell p.eyebrow {
+  color: var(--soft);
+}
+
+:root[data-theme="light"] .android-shell .text-zinc-400,
+:root[data-theme="light"] .android-shell .text-zinc-500 {
+  color: var(--soft) !important;
+}
+
+:root[data-theme="light"] .android-shell .choice-card,
+:root[data-theme="light"] .android-shell .treatment-option,
+:root[data-theme="light"] .android-shell .social-link,
+:root[data-theme="light"] .android-shell .instagram-link {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+:root[data-theme="light"] .android-shell .choice-card--selected {
+  background: rgba(88, 103, 90, 0.12);
+}
+
+:root[data-theme="light"] .android-shell button.bg-zinc-900,
+:root[data-theme="light"] .android-shell .bg-zinc-900 {
+  color: #ffffff;
+}
+
+:root[data-theme="light"] .android-shell .treatment-cta {
+  color: #ffffff;
+}
+
+:root[data-theme="light"]
+  .android-shell
+  main
+  button:not(.choice-card):not(.treatment-option):not(.quantity-button):not(.cart-icon-button):not(.underline):not(.product-detail-button):not(.product-add-button):not(.treatment-cta--disabled) {
+  background: linear-gradient(180deg, #37412f, #37412f);
+  border-color: #37412f;
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(88, 103, 90, 0.24);
+}
+
+:root[data-theme="light"] .android-shell .treatment-cta--disabled {
+  background: #e9ede8;
+  border-color: var(--stroke-strong);
+  color: var(--soft);
+  opacity: 1;
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .android-shell .product-stock-status--sold-out {
+  color: #b42318;
+}
+
+:root[data-theme="light"] .android-shell .inventory-error {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+:root[data-theme="light"] .android-shell .product-add-button:disabled {
+  border-color: #d3d9d2;
+  background: #e9ede8;
+  color: #5b6b61;
+  opacity: 1;
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .android-shell .treatment-option--selected {
+  border-color: #58675a;
+  background: rgba(88, 103, 90, 0.12);
+  box-shadow: inset 0 0 0 1px #58675a;
+}
+
+:root[data-theme="light"] .android-shell .treatment-check {
+  border-color: #5b6b61;
+  background: #ffffff;
+}
+
+:root[data-theme="light"] .android-shell .treatment-check--selected {
+  border-color: #37412f;
+  background: #37412f;
+  color: #ffffff;
 }

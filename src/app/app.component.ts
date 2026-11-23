@@ -20,6 +20,7 @@ type Page =
   | "pagamento-concluido"
 
 type NavigablePage = Exclude<Page, "produto">
+type NavigationDirection = "forward" | "back"
 
 type Interest = {
   source: "Loja" | "Mentoria" | "Tratamentos"
@@ -29,6 +30,9 @@ type Interest = {
 type Icon = "location" | "online" | "home" | "mobility" | "prevention"
 type ProductCategory = "Esportivo" | "Fisioterapêutico" | "Tratamentos"
 type PaymentMethod = "pix" | "credit"
+type Fulfillment = "delivery" | "pickup"
+
+const STORE_INVENTORY_VERSION = 2
 
 interface StoreProduct {
   id: string
@@ -39,6 +43,7 @@ interface StoreProduct {
   price: number
   icon: Icon
   imageUrl?: string
+  stock?: number
 }
 
 interface CartItem {
@@ -56,6 +61,7 @@ interface PurchaseOrder {
   customerName: string
   items: { product: StoreProduct; quantity: number }[]
   paymentMethod: PaymentMethod
+  fulfillment: Fulfillment | null
   subtotal: number
   total: number
 }
@@ -209,6 +215,8 @@ export class AppComponent {
       ],
       price: 49.9,
       icon: "mobility",
+      imageUrl: "imports/faixa-elastica-pro.jpg",
+      stock: 17,
     },
     {
       id: "rolo-massagem",
@@ -223,20 +231,24 @@ export class AppComponent {
       ],
       price: 89.9,
       icon: "prevention",
+      imageUrl: "imports/rolo-massagem-active.jpg",
+      stock: 15,
     },
     {
       id: "garrafa-esportiva",
-      title: "Garrafa Esportiva 750 ml",
+      title: "Garrafa Térmica 750 ml",
       category: "Esportivo",
       description:
-        "Garrafa reutilizável para acompanhar os treinos e manter a hidratação ao longo do dia.",
+        "Garrafa térmica reutilizável para manter sua bebida na temperatura ideal durante os treinos e ao longo do dia.",
       details: [
         "Capacidade de 750 ml.",
-        "Tampa com vedação para transporte na mochila.",
+        "Isolamento térmico para ajudar a manter a temperatura da bebida.",
         "Produto fictício para demonstração da Loja.",
       ],
       price: 59.9,
       icon: "online",
+      imageUrl: "imports/garrafa-termica-750ml.jpg",
+      stock: 20,
     },
     {
       id: "kit-mini-bands",
@@ -251,6 +263,8 @@ export class AppComponent {
       ],
       price: 74.9,
       icon: "mobility",
+      imageUrl: "imports/kit-mini-bands.jpg",
+      stock: 20,
     },
     {
       id: "bola-liberacao",
@@ -265,6 +279,8 @@ export class AppComponent {
       ],
       price: 29.9,
       icon: "prevention",
+      imageUrl: "imports/bola-liberacao-miofascial.jpg",
+      stock: 14,
     },
     {
       id: "kit-bandagem",
@@ -279,6 +295,8 @@ export class AppComponent {
       ],
       price: 39.9,
       icon: "online",
+      imageUrl: "imports/kit-bandagem-elastica.webp",
+      stock: 17,
     },
   ]
 
@@ -374,6 +392,8 @@ export class AppComponent {
       })),
   )
 
+  stockErrorMessage = ""
+  private remainingStock: Record<string, number> = this.savedStock()
   cartItems: CartItem[] = this.savedCart()
   treatmentCheckoutItems: CartItem[] | null = null
   checkoutCustomer = { name: "", email: "", phone: "" }
@@ -384,13 +404,25 @@ export class AppComponent {
   selectedByTreatment: Record<string, string[]> = {}
   submitted = false
   cartMessage = ""
+  darkMode = window.localStorage.getItem("site-theme") !== "light"
+  pageTransitionActive = false
+  pageTransitionDirection: NavigationDirection = "forward"
   paymentMethod: PaymentMethod = "pix"
+  fulfillment: Fulfillment = "delivery"
   pixCopyMessage = ""
   lastOrder: PurchaseOrder | null = null
+  private pageTransitionTimeout: number | null = null
+
+  constructor() {
+    document.documentElement.dataset.theme = this.darkMode ? "dark" : "light"
+  }
 
   @HostListener("window:popstate")
   onHistoryChange(): void {
     const route = this.routeFromHash()
+    this.animatePageTransition(
+      this.menuTransitionDirection(route.page) ?? "back",
+    )
     this.page = route.page
     this.selectedProductId = route.productId
     window.scrollTo({ top: 0, behavior: "auto" })
@@ -398,6 +430,13 @@ export class AppComponent {
 
   get selectedProduct(): StoreProduct | null {
     return this.products.find((product) => product.id === this.selectedProductId) ?? null
+  }
+
+  toggleTheme(): void {
+    this.darkMode = !this.darkMode
+    const theme = this.darkMode ? "dark" : "light"
+    window.localStorage.setItem("site-theme", theme)
+    document.documentElement.dataset.theme = theme
   }
 
   get cartLines(): { product: StoreProduct; quantity: number }[] {
@@ -435,11 +474,33 @@ export class AppComponent {
     )
   }
 
+  availableStock(productId: string): number {
+    const product = this.products.find((item) => item.id === productId)
+    if (!product || product.stock === undefined) return 0
+
+    const reservedQuantity =
+      this.cartItems.find((item) => item.productId === productId)?.quantity ?? 0
+    return Math.max(
+      0,
+      (this.remainingStock[productId] ?? product.stock) - reservedQuantity,
+    )
+  }
+
+  stockStatus(productId: string): string {
+    const available = this.availableStock(productId)
+    if (available === 0) return "Esgotado"
+    return `Estoque: ${available} ${available === 1 ? "unidade" : "unidades"}`
+  }
+
   get whatsappCheckoutUrl(): string {
     const items = this.checkoutLines
       .map((line) => `${line.quantity}x ${line.product.title}`)
       .join(", ")
-    const message = `Olá! Quero finalizar a compra demonstrativa via crédito: ${items}.`
+    const deliveryMessage =
+      this.treatmentCheckoutItems === null && this.fulfillment === "delivery"
+        ? " O frete será negociado via WhatsApp."
+        : ""
+    const message = `Olá! Quero finalizar a compra demonstrativa via crédito: ${items}.${deliveryMessage}`
     return `https://wa.me/?text=${encodeURIComponent(message)}`
   }
 
@@ -453,9 +514,15 @@ export class AppComponent {
     )
   }
 
-  goTo(destination: NavigablePage): void {
+  goTo(
+    destination: NavigablePage,
+    direction: NavigationDirection = "forward",
+  ): void {
     const nextHash = `#/${destination}`
     if (window.location.hash !== nextHash) {
+      this.animatePageTransition(
+        this.menuTransitionDirection(destination) ?? direction,
+      )
       window.history.pushState({ page: destination }, "", nextHash)
     }
     this.page = destination
@@ -465,15 +532,57 @@ export class AppComponent {
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
+  private menuTransitionDirection(
+    destination: Page,
+  ): NavigationDirection | null {
+    const currentIndex = this.bottomNavigation.findIndex(
+      (item) => item.id === this.page,
+    )
+    const destinationIndex = this.bottomNavigation.findIndex(
+      (item) => item.id === destination,
+    )
+
+    if (
+      currentIndex === -1 ||
+      destinationIndex === -1 ||
+      currentIndex === destinationIndex
+    ) {
+      return null
+    }
+
+    return destinationIndex > currentIndex ? "forward" : "back"
+  }
+
   openProduct(product: StoreProduct): void {
     this.cartMessage = ""
     const nextHash = `#/produto/${product.id}`
     if (window.location.hash !== nextHash) {
+      this.animatePageTransition("forward")
       window.history.pushState({ page: "produto", productId: product.id }, "", nextHash)
     }
     this.page = "produto"
     this.selectedProductId = product.id
     window.scrollTo({ top: 0, behavior: "auto" })
+  }
+
+  private animatePageTransition(direction: NavigationDirection): void {
+    if (this.pageTransitionTimeout !== null) {
+      window.clearTimeout(this.pageTransitionTimeout)
+      this.pageTransitionTimeout = null
+    }
+
+    this.pageTransitionActive = false
+    this.pageTransitionDirection = direction
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+
+    this.pageTransitionTimeout = window.setTimeout(() => {
+      this.pageTransitionActive = true
+      this.pageTransitionTimeout = window.setTimeout(() => {
+        this.pageTransitionActive = false
+        this.pageTransitionTimeout = null
+      }, 900)
+    }, 0)
   }
 
   productsInCategory(category: ProductCategory): StoreProduct[] {
@@ -488,12 +597,18 @@ export class AppComponent {
   }
 
   addToCart(product: StoreProduct, navigateToCart = true): void {
-    this.addCartProduct(product)
+    if (!this.addCartProduct(product)) {
+      this.cartMessage = `Não há mais unidades de ${product.title} disponíveis.`
+      return
+    }
+
     this.cartMessage = `${product.title} adicionado ao carrinho.`
     if (navigateToCart) this.goTo("carrinho")
   }
 
-  private addCartProduct(product: StoreProduct): void {
+  private addCartProduct(product: StoreProduct): boolean {
+    if (this.availableStock(product.id) < 1) return false
+
     const existing = this.cartItems.find((item) => item.productId === product.id)
     this.cartItems = existing
       ? this.cartItems.map((item) =>
@@ -503,9 +618,12 @@ export class AppComponent {
         )
       : [...this.cartItems, { productId: product.id, quantity: 1 }]
     this.saveCart()
+    return true
   }
 
   updateCartQuantity(productId: string, change: number): void {
+    if (change > this.availableStock(productId)) return
+
     this.cartItems = this.cartItems.map((item) =>
       item.productId === productId
         ? { ...item, quantity: Math.max(1, item.quantity + change) }
@@ -519,12 +637,18 @@ export class AppComponent {
     this.saveCart()
   }
 
+  clearCart(): void {
+    this.cartItems = []
+    this.saveCart()
+  }
+
   beginCheckout(): void {
     if (this.cartItems.length === 0) return
 
     this.treatmentCheckoutItems = null
     this.checkoutCustomer = { name: "", email: "", phone: "" }
     this.paymentMethod = "pix"
+    this.fulfillment = "delivery"
     this.pixCopyMessage = ""
     this.lastOrder = null
     this.goTo("cadastro-compra")
@@ -590,6 +714,13 @@ export class AppComponent {
       return
     }
 
+    if (
+      this.treatmentCheckoutItems === null &&
+      !this.commitCartStock()
+    ) {
+      return
+    }
+
     this.lastOrder = {
       reference: `DEMO-${Date.now().toString().slice(-6)}`,
       customerName: this.checkoutCustomer.name,
@@ -598,6 +729,8 @@ export class AppComponent {
         quantity: line.quantity,
       })),
       paymentMethod: this.paymentMethod,
+      fulfillment:
+        this.treatmentCheckoutItems === null ? this.fulfillment : null,
       subtotal: this.checkoutSubtotal,
       total: this.checkoutSubtotal,
     }
@@ -610,8 +743,46 @@ export class AppComponent {
     this.goTo("pagamento-concluido")
   }
 
+  private commitCartStock(): boolean {
+    const updatedStock = { ...this.remainingStock }
+
+    for (const item of this.cartItems) {
+      const product = this.products.find(
+        (candidate) => candidate.id === item.productId,
+      )
+      if (!product || product.stock === undefined) continue
+
+      const remaining = updatedStock[product.id] ?? product.stock
+      if (item.quantity > remaining) {
+        this.stockErrorMessage = `O estoque de ${product.title} mudou. Ajuste a quantidade no carrinho antes de concluir.`
+        return false
+      }
+
+      updatedStock[product.id] = remaining - item.quantity
+    }
+
+    try {
+      window.localStorage.setItem(
+        "store-inventory",
+        JSON.stringify({
+          version: STORE_INVENTORY_VERSION,
+          quantities: updatedStock,
+        }),
+      )
+    } catch (error) {
+      console.error("Não foi possível registrar a baixa do estoque.", error)
+      this.stockErrorMessage =
+        "Não foi possível atualizar o estoque. O pedido não foi concluído; tente novamente."
+      return false
+    }
+
+    this.remainingStock = updatedStock
+    this.stockErrorMessage = ""
+    return true
+  }
+
   goToPhysiotherapistMenu(): void {
-    this.goTo("fisioterapeuta")
+    this.goTo("fisioterapeuta", "back")
     requestAnimationFrame(() => {
       document
         .getElementById("physiotherapist-menu")
@@ -674,6 +845,7 @@ export class AppComponent {
       .map((product) => ({ productId: product.id, quantity: 1 }))
     this.checkoutCustomer = { name: "", email: "", phone: "" }
     this.paymentMethod = "pix"
+    this.fulfillment = "delivery"
     this.pixCopyMessage = ""
     this.lastOrder = null
     this.goTo("cadastro-compra")
@@ -723,6 +895,61 @@ export class AppComponent {
     )
   }
 
+  private savedStock(): Record<string, number> {
+    const stock: Record<string, number> = {}
+    for (const product of this.products) {
+      if (product.stock !== undefined) stock[product.id] = product.stock
+    }
+
+    try {
+      const value = window.localStorage.getItem("store-inventory")
+      if (value === null) return stock
+
+      const parsed: unknown = JSON.parse(value)
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+        throw new Error("Formato de estoque salvo inválido.")
+      }
+
+      const saved = parsed as Record<string, unknown>
+      const legacyFormat = !("version" in saved)
+      let savedQuantities = saved
+      if (!legacyFormat) {
+        if (
+          saved.version !== STORE_INVENTORY_VERSION ||
+          typeof saved.quantities !== "object" ||
+          saved.quantities === null ||
+          Array.isArray(saved.quantities)
+        ) {
+          throw new Error("Versão de estoque salvo inválida.")
+        }
+        savedQuantities = saved.quantities as Record<string, unknown>
+      }
+
+      for (const product of this.products) {
+        if (product.stock === undefined) continue
+        if (legacyFormat && product.id === "faixa-elastica-pro") continue
+        const quantity = savedQuantities[product.id]
+        if (quantity === undefined) continue
+        if (
+          typeof quantity !== "number" ||
+          !Number.isInteger(quantity) ||
+          quantity < 0 ||
+          quantity > product.stock
+        ) {
+          throw new Error(`Estoque salvo inválido para ${product.title}.`)
+        }
+        stock[product.id] = quantity
+      }
+
+      return stock
+    } catch (error) {
+      console.error("Não foi possível carregar o estoque salvo.", error)
+      this.stockErrorMessage =
+        "Não foi possível carregar o estoque. Os produtos foram bloqueados até a revisão dos dados."
+      return Object.fromEntries(Object.keys(stock).map((productId) => [productId, 0]))
+    }
+  }
+
   private savedCart(): CartItem[] {
     try {
       const value = window.sessionStorage.getItem("store-cart")
@@ -730,19 +957,39 @@ export class AppComponent {
       const parsed: unknown = JSON.parse(value)
       if (!Array.isArray(parsed)) return []
 
+      const reserved = new Map<string, number>()
       return parsed.flatMap((item: unknown) => {
         if (typeof item !== "object" || item === null) return []
         if (!("productId" in item) || !("quantity" in item)) return []
         const { productId, quantity } = item
-        return typeof productId === "string" &&
-          this.findProduct(productId) &&
-          typeof quantity === "number" &&
-          Number.isInteger(quantity) &&
-          quantity > 0
-          ? [{ productId, quantity }]
-          : []
+        if (
+          typeof productId !== "string" ||
+          typeof quantity !== "number" ||
+          !Number.isInteger(quantity) ||
+          quantity <= 0
+        ) {
+          return []
+        }
+
+        const product = this.products.find((candidate) => candidate.id === productId)
+        if (!product || product.stock === undefined) return []
+
+        const alreadyReserved = reserved.get(productId) ?? 0
+        const stockLimit = this.remainingStock[productId] ?? product.stock
+        const acceptedQuantity = Math.min(
+          quantity,
+          Math.max(0, stockLimit - alreadyReserved),
+        )
+        if (acceptedQuantity < quantity) {
+          console.warn(`A quantidade salva de ${product.title} foi ajustada ao estoque.`)
+        }
+        if (acceptedQuantity === 0) return []
+
+        reserved.set(productId, alreadyReserved + acceptedQuantity)
+        return [{ productId, quantity: acceptedQuantity }]
       })
-    } catch {
+    } catch (error) {
+      console.error("Não foi possível restaurar o carrinho salvo.", error)
       return []
     }
   }
